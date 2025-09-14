@@ -1,0 +1,9 @@
+part_number,description_en,description_es,hs_code,unit_weight,quantity,unit_price_fob
+LAPTOP001,Portable Computer Laptop 15 inch,Computadora Portátil Laptop 15 pulgadas,8471.30.00,2.5,10,850.00
+PHONE001,Smartphone Android 128GB,Teléfono Inteligente Android 128GB,8517.12.00,0.2,25,320.00
+CAR001,Passenger Car 1200cc Gasoline,Automóvil de Pasajeros 1200cc Gasolina,8703.23.00,1200.0,2,15000.00
+BEEF001,Fresh Beef Ribeye Steaks,Bistec de Res Fresco,0201.10.00,0.5,100,12.50
+MILK001,UHT Milk 1L Low Fat,Leche UHT 1L Descremada,0401.10.00,1.0,500,1.25
+HORSE001,Pure Breed Racing Horse,Caballo de Raza Pura para Carreras,0101.21.00,450.0,1,25000.00
+CATTLE001,Pure Breed Bull for Breeding,Toro de Raza Pura para Reproducción,0102.21.00,800.0,1,8000.00
+TABLET001,Tablet Computer 10 inch,Tableta Computadora 10 pulgadas,8471.41.00,0.8,15,280.00
