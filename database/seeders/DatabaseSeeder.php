@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SystemSettingsSeeder::class,
             IceTaxSeeder::class,
+            TlcScheduleSeeder::class,
         ]);
     }
 }
