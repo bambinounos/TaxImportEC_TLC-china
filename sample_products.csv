@@ -13,3 +13,13 @@ CIGARETTE001,Cigarettes,Cigarrillos,2402200000,false,,0.02,1000,0.50
 ALCOHOL001,Whisky,Whisky,2208300000,false,,0.75,20,45.00
 EXEMPT001,Medical Equipment,Equipo Médico,9018909000,true,Medical exemption under health regulations,5.0,5,1200.00
 EXEMPT002,Electric Vehicle,Vehículo Eléctrico,8703800000,true,Environmental exemption for electric vehicles,1800.0,1,35000.00
+REAL001,Live Horses,Caballos Vivos,0101900000,false,,450.0,2,3500.00
+REAL002,Bovine Meat,Carne Bovina,0201100000,false,,1.0,200,18.50
+REAL003,Frozen Fish,Pescado Congelado,0303800000,false,,1.0,100,12.00
+REAL004,Coffee Beans,Granos de Café,0901110000,false,,1.0,500,8.50
+REAL005,Wheat Flour,Harina de Trigo,1101000000,false,,1.0,1000,1.80
+REAL006,Sugar,Azúcar,1701140000,false,,1.0,800,2.20
+REAL007,Chocolate,Chocolate,1806200000,false,,0.5,200,15.00
+REAL008,Textiles,Textiles,5208110000,false,,0.3,300,12.50
+REAL009,Steel Products,Productos de Acero,7208100000,false,,10.0,50,850.00
+REAL010,Machinery Parts,Partes de Maquinaria,8409910000,false,,2.0,25,450.00
