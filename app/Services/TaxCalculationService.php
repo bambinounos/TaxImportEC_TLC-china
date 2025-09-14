@@ -119,6 +119,12 @@ class TaxCalculationService
 
     protected function calculateIce(CalculationItem $item): void
     {
+        if ($item->ice_exempt) {
+            $item->ice_rate = 0;
+            $item->ice_amount = 0;
+            return;
+        }
+
         if (!$item->hs_code) {
             $item->ice_rate = 0;
             $item->ice_amount = 0;

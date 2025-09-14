@@ -22,6 +22,8 @@ class CsvImportService
         'description_es',
         'unit_weight',
         'hs_code',
+        'ice_exempt',
+        'ice_exempt_reason',
     ];
 
     public function importFromCsv(UploadedFile $file, Calculation $calculation): array
@@ -135,11 +137,17 @@ class CsvImportService
             'description_en' => $requiredFields['description_en'],
             'description_es' => $data['description_es'] ?? null,
             'hs_code' => $this->cleanHsCode($data['hs_code'] ?? null),
+            'ice_exempt' => filter_var($data['ice_exempt'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'ice_exempt_reason' => $data['ice_exempt_reason'] ?? null,
             'unit_weight' => !empty($data['unit_weight']) ? (float) $data['unit_weight'] : null,
             'quantity' => $requiredFields['quantity'],
             'unit_price_fob' => $requiredFields['unit_price_fob'],
             'total_fob_value' => $requiredFields['quantity'] * $requiredFields['unit_price_fob'],
         ]);
+
+        if ($item->ice_exempt && empty($item->ice_exempt_reason)) {
+            throw new \Exception("Razón de exoneración de ICE es requerida cuando el producto está exento");
+        }
 
         if ($item->hs_code && !TariffCode::where('hs_code', $item->hs_code)->exists()) {
             throw new \Exception("Código arancelario '{$item->hs_code}' no existe en la base de datos");
