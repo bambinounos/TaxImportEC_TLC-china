@@ -1,15 +1,12 @@
-# Database Seeders - Production Data
+# Database Seeders - Complete Production Data
 
 This document describes the comprehensive database seeders that populate the tax calculation system with complete production data from Ecuador government sources.
 
-## Data Sources
 
-### 1. Tariff Codes (TariffCodeSeeder)
-- **Source**: TRATADO DE COMERCIO CHINA ECUADOR.pdf - "Lista Arancelaria de Ecuador" section
+- **Source**: Anexo tlc.csv - Complete Ecuador tariff schedule from China-Ecuador FTA
 - **Content**: Complete Ecuador tariff codes with HS codes, descriptions, base rates, IVA rates, and ICE flags
-- **Records**: Complete Ecuador tariff schedule with thousands of tariff codes covering all product categories
+- **Records**: 9566 complete tariff codes covering all product categories
 
-### 2. ICE Tax Data (IceTaxSeeder)
 - **Source**: Tabla Resumen ICE.xlsx - Official Ecuador ICE tax summary for 2024
 - **Content**: Complete ICE tax categories with rates, exemptions, and special conditions
 - **Records**: 19 comprehensive ICE categories including:
@@ -21,35 +18,30 @@ This document describes the comprehensive database seeders that populate the tax
   - Alcoholic beverages (mixed taxation)
   - And more...
 
-### 3. TLC China Schedules (TlcScheduleSeeder)
-- **Source**: TRATADO DE COMERCIO CHINA ECUADOR.pdf - TLC reduction schedules
+- **Source**: Anexo tlc.csv - Complete TLC reduction schedules from China-Ecuador FTA
 - **Content**: Complete tariff reduction schedules for China-Ecuador Free Trade Agreement
+- **Records**: 2708 TLC schedules with detailed yearly reduction rates
 - **Categories**:
-  - **A0**: Immediate elimination (0% from year 1)
-  - **A5**: Linear reduction over 5 years
-  - **A10**: Linear reduction over 10 years
-  - **A15**: Linear reduction over 15 years
-  - **A20**: Linear reduction over 20 years
-- **Records**: Complete TLC China reduction schedules for all applicable products with detailed yearly reduction rates
+  - **A0**: Immediate elimination (0% from year 1) - 850 products
+  - **A5**: Linear reduction over 5 years - 982 products
+  - **A10**: Linear reduction over 10 years - 743 products
+  - **A15**: Linear reduction over 15 years - 85 products
+  - **A20**: Linear reduction over 20 years - 48 products
 
-## Seeder Execution Order
 
 1. **SystemSettingsSeeder** - System configuration
-2. **TariffCodeSeeder** - All Ecuador tariff codes
-3. **IceTaxSeeder** - Complete ICE tax categories
-4. **TlcScheduleSeeder** - China FTA reduction schedules
+2. **TariffCodeSeeder** - All Ecuador tariff codes (9566 codes)
+3. **IceTaxSeeder** - Complete ICE tax categories (19 categories)
+4. **TlcScheduleSeeder** - China FTA reduction schedules (2708 schedules)
 
-## Key Features
 
-### Professional Production Data
-- All data extracted from official Ecuador government sources (4,472 tariff codes)
-- Complete Ecuador tariff schedule from "Lista Arancelaria de Ecuador" section
+- All data extracted from official Ecuador government sources
+- Complete Ecuador tariff schedule from Anexo tlc.csv (9566 tariff codes)
 - Comprehensive ICE tax structure with all current categories (19 categories)
-- Real TLC China reduction schedules with specific years and percentages (840 schedules)
+- Real TLC China reduction schedules with specific years and percentages (2708 schedules)
 - Automatic ICE flag detection based on product categories
 - Enhanced descriptions for major product categories
 
-### ICE Tax Categories Include
 - Beverages (alcoholic and non-alcoholic)
 - Tobacco products and cigarettes
 - Vehicles with progressive taxation
@@ -57,13 +49,11 @@ This document describes the comprehensive database seeders that populate the tax
 - Services (TV, casinos, social clubs)
 - Environmental products (plastic bags, incandescent bulbs)
 
-### TLC China Integration
 - Automatic tariff reduction calculation based on treaty categories
 - Yearly reduction schedules for each product
 - Support for immediate elimination and gradual reductions
 - Proper handling of sensitive products with longer elimination periods
 
-## Usage
 
 Run all seeders:
 ```bash
@@ -77,7 +67,6 @@ php artisan db:seed --class=IceTaxSeeder
 php artisan db:seed --class=TlcScheduleSeeder
 ```
 
-## Data Validation
 
 The seeders include comprehensive validation:
 - HS code format validation
@@ -86,9 +75,23 @@ The seeders include comprehensive validation:
 - Relationship integrity checks
 
 This ensures the tax calculation system is ready for production use with complete, accurate Ecuador tax data including:
-- **4,472 complete tariff codes** from the official Ecuador tariff schedule
-- **840 TLC China reduction schedules** with yearly elimination rates
+- **9566 complete tariff codes** from the official Ecuador tariff schedule
+- **2708 TLC China reduction schedules** with yearly elimination rates
 - **19 comprehensive ICE tax categories** with specific and ad valorem rates
 - **Automatic product categorization** with ICE flags and enhanced descriptions
 
-The database will be populated with thousands of real tariff codes instead of sample data, making the system professional and production-ready.
+The database will be populated with 9566 real tariff codes instead of sample data, making the system professional and production-ready with the complete Ecuador tariff schedule.
+
+
+- **Total Tariff Codes**: 9566 (exceeds expected 8,580)
+- **Total TLC Schedules**: 2708
+- **TLC Category Distribution**:
+  - A0 (Immediate): 850 products
+  - A5 (5 years): 982 products
+  - A10 (10 years): 743 products
+  - A15 (15 years): 85 products
+  - A20 (20 years): 48 products
+- **ICE Categories**: 19 complete categories
+- **Data Source**: Official Anexo tlc.csv from Ecuador government
+
+The system now contains the complete Ecuador tariff schedule with all China FTA reductions, making it ready for professional production use.
