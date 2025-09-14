@@ -1,9 +1,15 @@
-part_number,description_en,description_es,hs_code,unit_weight,quantity,unit_price_fob,ice_exempt,ice_exempt_reason
-LAPTOP001,Portable Computer Laptop 15 inch,Computadora Portátil Laptop 15 pulgadas,8471.30.00,2.5,10,850.00,false,
-PHONE001,Smartphone Android 128GB,Teléfono Inteligente Android 128GB,8517.12.00,0.2,25,320.00,false,
-CAR001,Passenger Car 1200cc Gasoline,Automóvil de Pasajeros 1200cc Gasolina,8703.23.00,1200.0,2,15000.00,true,Exoneración por documentación gubernamental especial
-BEEF001,Fresh Beef Ribeye Steaks,Bistec de Res Fresco,0201.10.00,0.5,100,12.50,false,
-MILK001,UHT Milk 1L Low Fat,Leche UHT 1L Descremada,0401.10.00,1.0,500,1.25,false,
-HORSE001,Pure Breed Racing Horse,Caballo de Raza Pura para Carreras,0101.21.00,450.0,1,25000.00,true,Exoneración por importación de ganado reproductor
-CATTLE001,Pure Breed Bull for Breeding,Toro de Raza Pura para Reproducción,0102.21.00,800.0,1,8000.00,true,Exoneración por importación de ganado reproductor
-TABLET001,Tablet Computer 10 inch,Tableta Computadora 10 pulgadas,8471.41.00,0.8,15,280.00,false,
+part_number,description_en,description_es,hs_code,ice_exempt,ice_exempt_reason,unit_weight,quantity,unit_price_fob
+COMP001,Laptop Computer,Computadora Portátil,8471300000,false,,2.5,10,800.00
+PHONE001,Smartphone,Teléfono Inteligente,8517120000,false,,0.2,50,300.00
+CAR001,Sedan Car,Automóvil Sedán,8703230000,false,,1200.0,2,25000.00
+CAR002,Luxury Car,Automóvil de Lujo,8703240000,false,,1500.0,1,45000.00
+MEAT001,Beef Fresh,Carne de Res Fresca,0201300000,false,,1.0,100,15.50
+MEAT002,Beef Frozen,Carne de Res Congelada,0202200000,false,,1.0,150,12.80
+MILK001,Fresh Milk,Leche Fresca,0401100000,false,,1.0,200,2.50
+MILK002,Cream,Nata,0401500000,false,,1.0,50,8.50
+HORSE001,Pure-bred Horse,Caballo de Raza Pura,0101210000,false,,450.0,1,5000.00
+BEVERAGE001,Soft Drink,Bebida Gaseosa,2202100000,false,,0.5,500,1.20
+CIGARETTE001,Cigarettes,Cigarrillos,2402200000,false,,0.02,1000,0.50
+ALCOHOL001,Whisky,Whisky,2208300000,false,,0.75,20,45.00
+EXEMPT001,Medical Equipment,Equipo Médico,9018909000,true,Medical exemption under health regulations,5.0,5,1200.00
+EXEMPT002,Electric Vehicle,Vehículo Eléctrico,8703800000,true,Environmental exemption for electric vehicles,1800.0,1,35000.00

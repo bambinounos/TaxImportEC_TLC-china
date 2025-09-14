@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             SystemSettingsSeeder::class,
+            TariffCodeSeeder::class,
             IceTaxSeeder::class,
             TlcScheduleSeeder::class,
         ]);
