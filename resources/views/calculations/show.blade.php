@@ -148,7 +148,12 @@
                                         <td>${{ number_format($item->unit_price_fob, 2) }}</td>
                                         <td>${{ number_format($item->cif_value, 2) }}</td>
                                         <td>${{ number_format($item->tariff_amount, 2) }}</td>
-                                        <td>${{ number_format($item->ice_amount, 2) }}</td>
+                                        <td>
+                                            ${{ number_format($item->ice_amount, 2) }}
+                                            @if($item->ice_exempt)
+                                                <br><small class="badge bg-warning text-dark" title="{{ $item->ice_exempt_reason }}">EXENTO</small>
+                                            @endif
+                                        </td>
                                         <td>${{ number_format($item->iva_amount, 2) }}</td>
                                         <td><strong>${{ number_format($item->total_cost, 2) }}</strong></td>
                                         <td><strong>${{ number_format($item->sale_price, 2) }}</strong></td>
@@ -247,7 +252,7 @@
                         <label for="csv_file" class="form-label">Archivo CSV</label>
                         <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv,.txt" required>
                         <div class="form-text">
-                            El archivo debe contener las columnas: description_en, quantity, unit_price_fob, hs_code (opcional), unit_weight (opcional)
+                            El archivo debe contener las columnas: description_en, quantity, unit_price_fob, hs_code (opcional), unit_weight (opcional), ice_exempt (opcional), ice_exempt_reason (opcional)
                         </div>
                     </div>
                 </div>

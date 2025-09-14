@@ -15,6 +15,8 @@ class CalculationItem extends Model
         'description_en',
         'description_es',
         'hs_code',
+        'ice_exempt',
+        'ice_exempt_reason',
         'unit_weight',
         'quantity',
         'unit_price_fob',
@@ -38,6 +40,7 @@ class CalculationItem extends Model
     ];
 
     protected $casts = [
+        'ice_exempt' => 'boolean',
         'unit_weight' => 'decimal:4',
         'unit_price_fob' => 'decimal:4',
         'total_fob_value' => 'decimal:2',
