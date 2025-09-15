@@ -52,6 +52,7 @@ Si la nueva versión del código incluye cambios en la estructura de la base de 
 
 ```bash
 php artisan migrate --force
+php artisan migrate:fresh --seed #Actualizar base de datos si hay errror
 ```
 El flag `--force` es necesario para ejecutar migraciones en producción. Laravel le pedirá confirmación antes de proceder.
 
