@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CalculationController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,13 @@ Route::middleware(['auth'])->group(function () {
         ->name('calculations.export-csv');
     Route::get('/calculations/{calculation}/export-excel', [CalculationController::class, 'exportExcel'])
         ->name('calculations.export-excel');
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('index');
+        Route::get('/tariff-codes', [AdminController::class, 'tariffCodes'])->name('tariff-codes');
+        Route::get('/tariff-codes/{hsCode}', [AdminController::class, 'showTariffCode'])->name('tariff-codes.show');
+        Route::get('/tlc-schedules', [AdminController::class, 'tlcSchedules'])->name('tlc-schedules');
+    });
 });
 
 require __DIR__.'/auth.php';
