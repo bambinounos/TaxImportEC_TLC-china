@@ -38,7 +38,15 @@ class CalculationController extends Controller
 
     public function create()
     {
-        return view('calculations.create');
+        try {
+            return view('calculations.create');
+        } catch (\Exception $e) {
+            \Log::error('Error in CalculationController@create: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Error al cargar el formulario de cálculo: ' . $e->getMessage());
+        }
     }
 
     public function store(Request $request)

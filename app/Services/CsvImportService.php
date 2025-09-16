@@ -57,12 +57,12 @@ class CsvImportService
                         if (empty($item->hs_code)) {
                             $suggestion = $this->suggestTariffCode($item);
                             if ($suggestion) {
-                                $results['warnings'][] = "Fila {$index + 1}: Se sugiere el código arancelario {$suggestion['hs_code']} para '{$item->description_en}'";
+                                $results['warnings'][] = "Fila " . ($index + 1) . ": Se sugiere el código arancelario {$suggestion['hs_code']} para '{$item->description_en}'";
                             }
                         }
                     }
                 } catch (\Exception $e) {
-                    $results['errors'][] = "Fila {$index + 1}: {$e->getMessage()}";
+                    $results['errors'][] = "Fila " . ($index + 1) . ": " . $e->getMessage();
                 }
             }
 

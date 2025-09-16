@@ -2,6 +2,20 @@
 
 @section('content')
 <div class="container-fluid">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -66,7 +80,12 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Partidas Arancelarias</h5>
-                    <span class="badge bg-primary">{{ $tariffCodes->total() }} resultados</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary">{{ $tariffCodes->total() }} resultados</span>
+                        <a href="{{ route('admin.tariff-codes.create') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Nuevo Código
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     @if($tariffCodes->count() > 0)
@@ -125,10 +144,25 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('admin.tariff-codes.show', $tariffCode->hs_code) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="Ver detalles">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('admin.tariff-codes.show', $tariffCode->hs_code) }}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('admin.tariff-codes.edit', $tariffCode->hs_code) }}" 
+                                                   class="btn btn-sm btn-outline-warning" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('admin.tariff-codes.destroy', $tariffCode->hs_code) }}" 
+                                                      method="POST" style="display: inline;" 
+                                                      onsubmit="return confirm('¿Está seguro de eliminar este código arancelario?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach

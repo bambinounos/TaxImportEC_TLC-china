@@ -81,6 +81,104 @@ class AdminController extends Controller
     }
 
     /**
+     * Show form for creating new tariff code
+     */
+    public function createTariffCode(): View
+    {
+        return view('admin.tariff-code-create');
+    }
+
+    /**
+     * Store new tariff code
+     */
+    public function storeTariffCode(Request $request)
+    {
+        $request->validate([
+            'hs_code' => 'required|string|max:20|unique:tariff_codes',
+            'description_en' => 'required|string|max:500',
+            'description_es' => 'required|string|max:500',
+            'base_tariff_rate' => 'required|numeric|min:0|max:100',
+            'iva_rate' => 'required|numeric|min:0|max:100',
+            'unit' => 'nullable|string|max:10',
+            'has_ice' => 'boolean',
+            'is_active' => 'boolean'
+        ]);
+
+        TariffCode::create([
+            'hs_code' => $request->hs_code,
+            'description_en' => $request->description_en,
+            'description_es' => $request->description_es,
+            'base_tariff_rate' => $request->base_tariff_rate,
+            'iva_rate' => $request->iva_rate ?? 12.0,
+            'unit' => $request->unit,
+            'has_ice' => $request->boolean('has_ice', false),
+            'is_active' => $request->boolean('is_active', true)
+        ]);
+
+        return redirect()->route('admin.tariff-codes')
+            ->with('success', 'Código arancelario creado exitosamente.');
+    }
+
+    /**
+     * Show form for editing tariff code
+     */
+    public function editTariffCode(string $hsCode): View
+    {
+        $tariffCode = TariffCode::where('hs_code', $hsCode)->firstOrFail();
+        return view('admin.tariff-code-edit', compact('tariffCode'));
+    }
+
+    /**
+     * Update tariff code
+     */
+    public function updateTariffCode(Request $request, string $hsCode)
+    {
+        $tariffCode = TariffCode::where('hs_code', $hsCode)->firstOrFail();
+        
+        $request->validate([
+            'hs_code' => 'required|string|max:20|unique:tariff_codes,hs_code,' . $tariffCode->id,
+            'description_en' => 'required|string|max:500',
+            'description_es' => 'required|string|max:500',
+            'base_tariff_rate' => 'required|numeric|min:0|max:100',
+            'iva_rate' => 'required|numeric|min:0|max:100',
+            'unit' => 'nullable|string|max:10',
+            'has_ice' => 'boolean',
+            'is_active' => 'boolean'
+        ]);
+
+        $tariffCode->update([
+            'hs_code' => $request->hs_code,
+            'description_en' => $request->description_en,
+            'description_es' => $request->description_es,
+            'base_tariff_rate' => $request->base_tariff_rate,
+            'iva_rate' => $request->iva_rate,
+            'unit' => $request->unit,
+            'has_ice' => $request->boolean('has_ice', false),
+            'is_active' => $request->boolean('is_active', true)
+        ]);
+
+        return redirect()->route('admin.tariff-codes')
+            ->with('success', 'Código arancelario actualizado exitosamente.');
+    }
+
+    /**
+     * Delete tariff code
+     */
+    public function destroyTariffCode(string $hsCode)
+    {
+        $tariffCode = TariffCode::where('hs_code', $hsCode)->firstOrFail();
+        
+        try {
+            $tariffCode->delete();
+            return redirect()->route('admin.tariff-codes')
+                ->with('success', 'Código arancelario eliminado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.tariff-codes')
+                ->with('error', 'No se puede eliminar el código arancelario. Puede estar siendo utilizado en cálculos existentes.');
+        }
+    }
+
+    /**
      * Display TLC schedules management
      */
     public function tlcSchedules(Request $request): View

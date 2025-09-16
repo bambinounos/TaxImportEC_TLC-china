@@ -7,6 +7,7 @@ use App\Models\CalculationItem;
 use App\Models\TariffCode;
 use App\Models\IceTax;
 use App\Models\SystemSetting;
+use Illuminate\Support\Facades\Log;
 
 class TaxCalculationService
 {
