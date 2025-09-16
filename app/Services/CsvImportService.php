@@ -178,6 +178,7 @@ class CsvImportService
         $words = explode(' ', $description);
         
         $suggestions = TariffCode::where('is_active', true)
+            ->where('hierarchy_level', 10)
             ->where(function ($query) use ($words) {
                 foreach ($words as $word) {
                     if (strlen($word) > 3) {

@@ -60,6 +60,7 @@ class AdminController extends Controller
         }
 
         $tariffCodes = $query->with('tlcSchedules')
+                           ->orderBy('hierarchy_level')
                            ->orderBy('hs_code')
                            ->paginate(50);
 
@@ -97,9 +98,12 @@ class AdminController extends Controller
             'hs_code' => 'required|string|max:20|unique:tariff_codes',
             'description_en' => 'required|string|max:500',
             'description_es' => 'required|string|max:500',
-            'base_tariff_rate' => 'required|numeric|min:0|max:100',
+            'base_tariff_rate' => 'nullable|numeric|min:0|max:100',
             'iva_rate' => 'required|numeric|min:0|max:100',
             'unit' => 'nullable|string|max:10',
+            'hierarchy_level' => 'required|integer|in:4,6,10',
+            'parent_code' => 'nullable|string|max:20',
+            'order_number' => 'nullable|integer',
             'has_ice' => 'boolean',
             'is_active' => 'boolean'
         ]);
@@ -111,6 +115,9 @@ class AdminController extends Controller
             'base_tariff_rate' => $request->base_tariff_rate,
             'iva_rate' => $request->iva_rate ?? 12.0,
             'unit' => $request->unit,
+            'hierarchy_level' => $request->hierarchy_level,
+            'parent_code' => $request->parent_code,
+            'order_number' => $request->order_number,
             'has_ice' => $request->boolean('has_ice', false),
             'is_active' => $request->boolean('is_active', true)
         ]);
@@ -139,9 +146,12 @@ class AdminController extends Controller
             'hs_code' => 'required|string|max:20|unique:tariff_codes,hs_code,' . $tariffCode->id,
             'description_en' => 'required|string|max:500',
             'description_es' => 'required|string|max:500',
-            'base_tariff_rate' => 'required|numeric|min:0|max:100',
+            'base_tariff_rate' => 'nullable|numeric|min:0|max:100',
             'iva_rate' => 'required|numeric|min:0|max:100',
             'unit' => 'nullable|string|max:10',
+            'hierarchy_level' => 'required|integer|in:4,6,10',
+            'parent_code' => 'nullable|string|max:20',
+            'order_number' => 'nullable|integer',
             'has_ice' => 'boolean',
             'is_active' => 'boolean'
         ]);
@@ -153,6 +163,9 @@ class AdminController extends Controller
             'base_tariff_rate' => $request->base_tariff_rate,
             'iva_rate' => $request->iva_rate,
             'unit' => $request->unit,
+            'hierarchy_level' => $request->hierarchy_level,
+            'parent_code' => $request->parent_code,
+            'order_number' => $request->order_number,
             'has_ice' => $request->boolean('has_ice', false),
             'is_active' => $request->boolean('is_active', true)
         ]);

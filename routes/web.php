@@ -14,6 +14,10 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     Route::resource('calculations', CalculationController::class);
+    Route::get('/calculations/create-manual', [CalculationController::class, 'createManual'])
+        ->name('calculations.create-manual');
+    Route::post('/calculations/manual', [CalculationController::class, 'storeManual'])
+        ->name('calculations.store-manual');
     Route::post('/calculations/{calculation}/import-csv', [CalculationController::class, 'importCsv'])
         ->name('calculations.import-csv');
     Route::post('/calculations/{calculation}/calculate', [CalculationController::class, 'calculate'])
