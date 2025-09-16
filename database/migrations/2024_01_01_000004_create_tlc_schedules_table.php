@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('elimination_years');
             $table->date('start_date');
             $table->enum('reduction_type', ['immediate', 'linear', 'staged'])->default('linear');
+            $table->string('tlc_category', 10)->nullable();
             $table->json('yearly_rates')->nullable();
             $table->text('notes')->nullable();
             $table->boolean('is_active')->default(true);

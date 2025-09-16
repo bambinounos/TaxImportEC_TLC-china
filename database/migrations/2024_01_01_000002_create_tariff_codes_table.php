@@ -10,17 +10,24 @@ return new class extends Migration
     {
         Schema::create('tariff_codes', function (Blueprint $table) {
             $table->id();
-            $table->string('hs_code', 10)->unique();
-            $table->string('description_en');
-            $table->string('description_es');
-            $table->decimal('base_tariff_rate', 8, 4)->default(0);
-            $table->decimal('iva_rate', 8, 4)->default(15.00);
+            $table->string('hs_code', 20)->unique();
+            $table->text('description_en');
+            $table->text('description_es');
+            $table->decimal('base_tariff_rate', 8, 4)->nullable();
+            $table->decimal('iva_rate', 8, 4)->default(12.0);
+            $table->string('unit', 10)->nullable();
             $table->boolean('has_ice')->default(false);
             $table->boolean('is_active')->default(true);
+            $table->integer('hierarchy_level')->default(10);
+            $table->string('parent_code', 20)->nullable();
+            $table->integer('order_number')->nullable();
             $table->timestamps();
             
             $table->index('hs_code');
-            $table->index(['is_active', 'has_ice']);
+            $table->index('is_active');
+            $table->index('has_ice');
+            $table->index(['hierarchy_level', 'parent_code']);
+            $table->index('order_number');
         });
     }
 

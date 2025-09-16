@@ -49,6 +49,96 @@ class CalculationController extends Controller
         }
     }
 
+    public function createManual()
+    {
+        return view('calculations.create-manual');
+    }
+
+    public function storeManual(Request $request)
+    {
+        $request->validate([
+            'calculation_name' => 'required|string|max:255',
+            'products' => 'required|array|min:1',
+            'products.*.description' => 'required|string|max:255',
+            'products.*.hs_code' => 'required|string|max:20',
+            'products.*.quantity' => 'required|numeric|min:0.01',
+            'products.*.unit_value' => 'required|numeric|min:0.01',
+            'products.*.ice_exempt' => 'boolean',
+            'products.*.ice_exempt_reason' => 'nullable|string|max:255',
+        ]);
+
+        $calculation = Calculation::create([
+            'name' => $request->calculation_name,
+            'user_id' => auth()->id(),
+            'total_fob' => 0,
+            'total_tariff' => 0,
+            'total_iva' => 0,
+            'total_ice' => 0,
+            'total_taxes' => 0,
+            'total_cif' => 0,
+        ]);
+
+        $totalFob = 0;
+        $totalTariff = 0;
+        $totalIva = 0;
+        $totalIce = 0;
+
+        foreach ($request->products as $productData) {
+            $tariffCode = TariffCode::where('hs_code', $productData['hs_code'])
+                                  ->where('hierarchy_level', 10)
+                                  ->first();
+
+            if (!$tariffCode) {
+                return back()->withErrors(['products' => "Código arancelario {$productData['hs_code']} no encontrado."]);
+            }
+
+            $quantity = (float) $productData['quantity'];
+            $unitValue = (float) $productData['unit_value'];
+            $fobValue = $quantity * $unitValue;
+
+            $tariffAmount = $this->taxCalculationService->calculateTariff($tariffCode, $fobValue);
+            $ivaAmount = $this->taxCalculationService->calculateIva($fobValue + $tariffAmount);
+            
+            $iceAmount = 0;
+            if (!($productData['ice_exempt'] ?? false)) {
+                $iceAmount = $this->taxCalculationService->calculateIce($tariffCode, $fobValue);
+            }
+
+            CalculationItem::create([
+                'calculation_id' => $calculation->id,
+                'product_description' => $productData['description'],
+                'hs_code' => $productData['hs_code'],
+                'quantity' => $quantity,
+                'unit_value' => $unitValue,
+                'fob_value' => $fobValue,
+                'tariff_amount' => $tariffAmount,
+                'iva_amount' => $ivaAmount,
+                'ice_amount' => $iceAmount,
+                'ice_exempt' => $productData['ice_exempt'] ?? false,
+                'ice_exempt_reason' => $productData['ice_exempt_reason'] ?? null,
+                'total_taxes' => $tariffAmount + $ivaAmount + $iceAmount,
+                'cif_value' => $fobValue + $tariffAmount + $ivaAmount + $iceAmount,
+            ]);
+
+            $totalFob += $fobValue;
+            $totalTariff += $tariffAmount;
+            $totalIva += $ivaAmount;
+            $totalIce += $iceAmount;
+        }
+
+        $calculation->update([
+            'total_fob' => $totalFob,
+            'total_tariff' => $totalTariff,
+            'total_iva' => $totalIva,
+            'total_ice' => $totalIce,
+            'total_taxes' => $totalTariff + $totalIva + $totalIce,
+            'total_cif' => $totalFob + $totalTariff + $totalIva + $totalIce,
+        ]);
+
+        return redirect()->route('calculations.show', $calculation)
+                        ->with('success', 'Cálculo manual creado exitosamente.');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
