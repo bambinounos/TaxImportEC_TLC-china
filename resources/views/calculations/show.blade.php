@@ -1,3 +1,4 @@
+@php(dd($calculation))@endphp
 @extends('layouts.app')
 
 @section('content')

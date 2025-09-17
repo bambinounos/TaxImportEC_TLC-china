@@ -82,6 +82,42 @@ try {
         echo "   ✗ calculations.create view failed: " . $e->getMessage() . "\n";
     }
     
+    echo "6. Checking calculations.show view...\n";
+    try {
+        // We need a user for the view's "Created by" line
+        $user = new \App\Models\User(['name' => 'Test User']);
+
+        // Create a mock calculation object with the properties the view expects
+        $calculation = new \App\Models\Calculation([
+            'name' => 'Test Calculation',
+            'created_at' => new \Illuminate\Support\Carbon(),
+            'calculation_year' => 2024,
+            'proration_method' => 'weight',
+            'description' => 'Test Description',
+            'use_tlc_china' => false,
+            'insurance_rate' => 1.5,
+            'total_fob_value' => 0, // Set to 0 for empty calculation
+        ]);
+
+        // Manually set the relationships that the view will try to access
+        $calculation->setRelation('user', $user);
+        $calculation->setRelation('items', new \Illuminate\Database\Eloquent\Collection());
+
+        // Attempt to render the view
+        $viewFactory = $app->make(\Illuminate\Contracts\View\Factory::class);
+        $html = $viewFactory->make('calculations.show', ['calculation' => $calculation])->render();
+
+        echo "   ✓ calculations.show view compiled successfully\n";
+
+    } catch (Exception $e) {
+        echo "   ✗ calculations.show view failed: " . $e->getMessage() . "\n";
+        // Print a simplified trace
+        $trace = array_slice($e->getTrace(), 0, 5);
+        foreach ($trace as $t) {
+            echo "     at " . ($t['file'] ?? 'unknown file') . ":" . ($t['line'] ?? 'unknown line') . "\n";
+        }
+    }
+
     echo "\n=== Debug Complete ===\n";
     
 } catch (Exception $e) {
