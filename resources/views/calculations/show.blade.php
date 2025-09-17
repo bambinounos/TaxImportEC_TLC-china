@@ -9,7 +9,7 @@
                     <div>
                         <h4>{{ $calculation->name }}</h4>
                         <small class="text-muted">
-                            Creado el {{ $calculation->created_at->format('d/m/Y H:i') }} por {{ $calculation->user->name }}
+                            Creado el {{ $calculation->created_at->format('d/m/Y H:i') }} por {{ optional($calculation->user)->name ?? 'Usuario no encontrado' }}
                         </small>
                     </div>
                     <div class="btn-group">
