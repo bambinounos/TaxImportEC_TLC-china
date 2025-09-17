@@ -29,14 +29,12 @@ class CsvImportService
     public function importFromCsv(UploadedFile $file, Calculation $calculation): array
     {
         $results = [
-            'created' => 0,
-            'updated' => 0,
-            'deleted' => 0,
+            'toCreate' => [],
+            'toUpdate' => [],
+            'toDelete' => [],
             'errors' => [],
             'warnings' => [],
         ];
-
-        DB::beginTransaction();
 
         try {
             $csvData = $this->parseCsvFile($file);
@@ -57,7 +55,6 @@ class CsvImportService
                 $rowNumber = $i + 1;
 
                 try {
-                    // Ensure row has same number of columns as headers
                     if (count($row) !== count($headers)) {
                         $results['errors'][] = "Fila {$rowNumber}: El número de columnas no coincide con la cabecera.";
                         continue;
@@ -72,19 +69,23 @@ class CsvImportService
 
                     $csvPartNumbers[$partNumber] = true;
 
+                    $itemData = $this->mapCsvDataToItem($data);
+                    $newItem = null;
+                    $item = null;
+
                     if ($existingItems->has($partNumber)) {
                         $item = $existingItems->get($partNumber);
-                        $this->updateCalculationItem($item, $data, $rowNumber);
-                        $results['updated']++;
+                        $results['toUpdate'][] = ['item' => $item, 'data' => $itemData];
                     } else {
-                        $item = $this->createCalculationItem($data, $calculation, $rowNumber);
-                        $results['created']++;
+                        $newItem = new CalculationItem($itemData);
+                        $results['toCreate'][] = $newItem;
                     }
 
-                    if ($item && empty($item->hs_code)) {
-                        $suggestion = $this->suggestTariffCode($item);
+                    $currentItem = $item ?? $newItem;
+                    if ($currentItem && empty($currentItem->hs_code)) {
+                        $suggestion = $this->suggestTariffCode($currentItem);
                         if ($suggestion) {
-                            $results['warnings'][] = "Fila {$rowNumber}: Se sugiere el código arancelario {$suggestion['hs_code']} para '{$item->description_en}'";
+                            $results['warnings'][] = "Fila {$rowNumber}: Se sugiere el código arancelario {$suggestion['hs_code']} para '{$currentItem->description_en}'";
                         }
                     }
 
@@ -93,20 +94,15 @@ class CsvImportService
                 }
             }
 
-            // Process deletions
             $itemsToDelete = $existingItems->filter(function ($item, $partNumber) use ($csvPartNumbers) {
                 return !isset($csvPartNumbers[$partNumber]);
             });
 
             foreach ($itemsToDelete as $item) {
-                $item->delete();
-                $results['deleted']++;
+                $results['toDelete'][] = $item;
             }
 
-            DB::commit();
-
         } catch (\Exception $e) {
-            DB::rollBack();
             $results['errors'][] = "Error general: {$e->getMessage()}";
         }
 
@@ -181,7 +177,6 @@ class CsvImportService
             'quantity' => $quantity,
             'unit_price_fob' => $unitPriceFob,
             'total_fob_value' => $totalFobValue,
-            'cif_value' => $totalFobValue,
         ];
 
         if ($itemData['ice_exempt'] && empty($itemData['ice_exempt_reason'])) {
@@ -193,21 +188,6 @@ class CsvImportService
         }
 
         return $itemData;
-    }
-
-    protected function updateCalculationItem(CalculationItem $item, array $data, int $rowNumber): CalculationItem
-    {
-        $itemData = $this->mapCsvDataToItem($data);
-        $item->update($itemData);
-        return $item;
-    }
-
-    protected function createCalculationItem(array $data, Calculation $calculation, int $rowNumber): CalculationItem
-    {
-        $itemData = $this->mapCsvDataToItem($data);
-        $itemData['calculation_id'] = $calculation->id;
-
-        return CalculationItem::create($itemData);
     }
 
     protected function cleanHsCode(?string $hsCode): ?string

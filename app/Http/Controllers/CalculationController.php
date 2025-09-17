@@ -154,38 +154,66 @@ class CalculationController extends Controller
             'csv_file' => 'required|file|mimes:csv,txt|max:10240',
         ]);
 
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            $results = $this->csvImportService->importFromCsv(
+        try {
+            $importData = $this->csvImportService->importFromCsv(
                 $request->file('csv_file'),
                 $calculation
             );
 
-            if ($results['success'] > 0) {
+            if (!empty($importData['errors'])) {
+                DB::rollBack();
+                $errorMessage = "La importación falló con " . count($importData['errors']) . " error(es): " . implode('; ', $importData['errors']);
+                return redirect()->route('calculations.show', $calculation)
+                                ->with('error', $errorMessage);
+            }
+
+            foreach ($importData['toDelete'] as $item) {
+                $item->delete();
+            }
+
+            $itemsToProcess = collect();
+            foreach ($importData['toUpdate'] as $updateInfo) {
+                $updateInfo['item']->fill($updateInfo['data']);
+                $itemsToProcess->push($updateInfo['item']);
+            }
+            
+            foreach ($importData['toCreate'] as $newItem) {
+                $itemsToProcess->push($newItem);
+            }
+
+            $calculation->setRelation('items', $itemsToProcess);
+
+            if ($itemsToProcess->isNotEmpty()) {
                 $this->taxCalculationService->calculateTaxes($calculation);
             }
 
             DB::commit();
 
-            $message = "Importación completada: {$results['success']} productos importados.";
-            
-            if (!empty($results['warnings'])) {
-                $message .= " Advertencias: " . implode(', ', $results['warnings']);
-            }
+            $parts = [];
+            if (count($importData['toCreate']) > 0) $parts[] = count($importData['toCreate']) . " productos creados";
+            if (count($importData['toUpdate']) > 0) $parts[] = count($importData['toUpdate']) . " productos actualizados";
+            if (count($importData['toDelete']) > 0) $parts[] = count($importData['toDelete']) . " productos eliminados";
+            $successMessage = "Importación completada. " . implode(', ', $parts) . ".";
 
-            if (!empty($results['errors'])) {
-                $message .= " Errores: " . implode(', ', $results['errors']);
+            if (!empty($importData['warnings'])) {
+                $successMessage .= " Se encontraron advertencias: " . implode('; ', $importData['warnings']);
             }
 
             return redirect()->route('calculations.show', $calculation)
-                ->with('success', $message);
+                            ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
             
+            \Log::error('Error during CSV import orchestration: ' . $e->getMessage(), [
+                'calculation_id' => $calculation->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return redirect()->route('calculations.show', $calculation)
-                ->with('error', 'Error durante la importación: ' . $e->getMessage());
+                ->with('error', 'Error inesperado durante la importación: ' . $e->getMessage());
         }
     }
 
