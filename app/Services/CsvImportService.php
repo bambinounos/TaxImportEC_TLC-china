@@ -12,13 +12,13 @@ use Illuminate\Support\Str;
 class CsvImportService
 {
     protected array $requiredColumns = [
+        'part_number',
         'description_en',
         'quantity',
         'unit_price_fob',
     ];
 
     protected array $optionalColumns = [
-        'part_number',
         'description_es',
         'unit_weight',
         'hs_code',
@@ -29,41 +29,78 @@ class CsvImportService
     public function importFromCsv(UploadedFile $file, Calculation $calculation): array
     {
         $results = [
-            'success' => 0,
+            'created' => 0,
+            'updated' => 0,
+            'deleted' => 0,
             'errors' => [],
             'warnings' => [],
         ];
 
+        DB::beginTransaction();
+
         try {
             $csvData = $this->parseCsvFile($file);
             
-            if (empty($csvData)) {
-                $results['errors'][] = 'El archivo CSV está vacío o no se pudo leer correctamente.';
-                return $results;
+            if (count($csvData) < 2) {
+                throw new \Exception('El archivo CSV está vacío o solo contiene la cabecera.');
             }
 
-            $this->validateCsvHeaders($csvData[0]);
+            $headers = array_map('strtolower', array_map('trim', $csvData[0]));
+            $this->validateCsvHeaders($headers);
 
-            DB::beginTransaction();
+            $existingItems = $calculation->items()->get()->keyBy('part_number');
+            $csvPartNumbers = [];
 
-            foreach ($csvData as $index => $row) {
-                if ($index === 0) continue;
-                
+            // Process rows for creation or update
+            for ($i = 1; $i < count($csvData); $i++) {
+                $row = $csvData[$i];
+                $rowNumber = $i + 1;
+
                 try {
-                    $item = $this->createCalculationItem($row, $csvData[0], $calculation, $index + 1);
-                    if ($item) {
-                        $results['success']++;
-                        
-                        if (empty($item->hs_code)) {
-                            $suggestion = $this->suggestTariffCode($item);
-                            if ($suggestion) {
-                                $results['warnings'][] = "Fila " . ($index + 1) . ": Se sugiere el código arancelario {$suggestion['hs_code']} para '{$item->description_en}'";
-                            }
+                    // Ensure row has same number of columns as headers
+                    if (count($row) !== count($headers)) {
+                        $results['errors'][] = "Fila {$rowNumber}: El número de columnas no coincide con la cabecera.";
+                        continue;
+                    }
+                    $data = array_combine($headers, $row);
+                    $partNumber = $data['part_number'] ?? null;
+
+                    if (empty($partNumber)) {
+                        $results['errors'][] = "Fila {$rowNumber}: El 'part_number' es obligatorio.";
+                        continue;
+                    }
+
+                    $csvPartNumbers[$partNumber] = true;
+
+                    if ($existingItems->has($partNumber)) {
+                        $item = $existingItems->get($partNumber);
+                        $this->updateCalculationItem($item, $data, $rowNumber);
+                        $results['updated']++;
+                    } else {
+                        $item = $this->createCalculationItem($data, $calculation, $rowNumber);
+                        $results['created']++;
+                    }
+
+                    if ($item && empty($item->hs_code)) {
+                        $suggestion = $this->suggestTariffCode($item);
+                        if ($suggestion) {
+                            $results['warnings'][] = "Fila {$rowNumber}: Se sugiere el código arancelario {$suggestion['hs_code']} para '{$item->description_en}'";
                         }
                     }
+
                 } catch (\Exception $e) {
-                    $results['errors'][] = "Fila " . ($index + 1) . ": " . $e->getMessage();
+                    $results['errors'][] = "Fila {$rowNumber}: " . $e->getMessage();
                 }
+            }
+
+            // Process deletions
+            $itemsToDelete = $existingItems->filter(function ($item, $partNumber) use ($csvPartNumbers) {
+                return !isset($csvPartNumbers[$partNumber]);
+            });
+
+            foreach ($itemsToDelete as $item) {
+                $item->delete();
+                $results['deleted']++;
             }
 
             DB::commit();
@@ -112,53 +149,62 @@ class CsvImportService
         }
     }
 
-    protected function createCalculationItem(array $row, array $headers, Calculation $calculation, int $rowNumber): ?CalculationItem
+    protected function mapCsvDataToItem(array $data): array
     {
-        $normalizedHeaders = array_map('strtolower', array_map('trim', $headers));
-        $data = array_combine($normalizedHeaders, $row);
-
-        $requiredFields = [
-            'description_en' => $data['description_en'] ?? '',
-            'quantity' => (int) ($data['quantity'] ?? 0),
-            'unit_price_fob' => (float) ($data['unit_price_fob'] ?? 0),
-        ];
-
-        if (empty($requiredFields['description_en'])) {
-            throw new \Exception("Descripción en inglés es requerida");
+        if (empty($data['part_number'])) {
+            throw new \Exception("'part_number' es requerido.");
+        }
+        if (empty($data['description_en'])) {
+            throw new \Exception("Descripción en inglés es requerida.");
         }
 
-        if ($requiredFields['quantity'] <= 0) {
-            throw new \Exception("Cantidad debe ser mayor a 0");
+        $quantity = (int) ($data['quantity'] ?? 0);
+        $unitPriceFob = (float) ($data['unit_price_fob'] ?? 0);
+
+        if ($quantity <= 0) {
+            throw new \Exception("Cantidad debe ser mayor a 0.");
+        }
+        if ($unitPriceFob <= 0) {
+            throw new \Exception("Precio unitario FOB debe ser mayor a 0.");
         }
 
-        if ($requiredFields['unit_price_fob'] <= 0) {
-            throw new \Exception("Precio unitario FOB debe ser mayor a 0");
-        }
-
-        $item = new CalculationItem([
-            'calculation_id' => $calculation->id,
-            'part_number' => $data['part_number'] ?? null,
-            'description_en' => $requiredFields['description_en'],
+        $itemData = [
+            'part_number' => $data['part_number'],
+            'description_en' => $data['description_en'],
             'description_es' => $data['description_es'] ?? null,
             'hs_code' => $this->cleanHsCode($data['hs_code'] ?? null),
             'ice_exempt' => filter_var($data['ice_exempt'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'ice_exempt_reason' => $data['ice_exempt_reason'] ?? null,
             'unit_weight' => !empty($data['unit_weight']) ? (float) $data['unit_weight'] : null,
-            'quantity' => $requiredFields['quantity'],
-            'unit_price_fob' => $requiredFields['unit_price_fob'],
-            'total_fob_value' => $requiredFields['quantity'] * $requiredFields['unit_price_fob'],
-        ]);
+            'quantity' => $quantity,
+            'unit_price_fob' => $unitPriceFob,
+            'total_fob_value' => $quantity * $unitPriceFob,
+        ];
 
-        if ($item->ice_exempt && empty($item->ice_exempt_reason)) {
-            throw new \Exception("Razón de exoneración de ICE es requerida cuando el producto está exento");
+        if ($itemData['ice_exempt'] && empty($itemData['ice_exempt_reason'])) {
+            throw new \Exception("Razón de exoneración de ICE es requerida cuando el producto está exento.");
         }
 
-        if ($item->hs_code && !TariffCode::where('hs_code', $item->hs_code)->exists()) {
-            throw new \Exception("Código arancelario '{$item->hs_code}' no existe en la base de datos");
+        if ($itemData['hs_code'] && !TariffCode::where('hs_code', $itemData['hs_code'])->exists()) {
+            throw new \Exception("Código arancelario '{$itemData['hs_code']}' no existe en la base de datos.");
         }
 
-        $item->save();
+        return $itemData;
+    }
+
+    protected function updateCalculationItem(CalculationItem $item, array $data, int $rowNumber): CalculationItem
+    {
+        $itemData = $this->mapCsvDataToItem($data);
+        $item->update($itemData);
         return $item;
+    }
+
+    protected function createCalculationItem(array $data, Calculation $calculation, int $rowNumber): CalculationItem
+    {
+        $itemData = $this->mapCsvDataToItem($data);
+        $itemData['calculation_id'] = $calculation->id;
+
+        return CalculationItem::create($itemData);
     }
 
     protected function cleanHsCode(?string $hsCode): ?string
