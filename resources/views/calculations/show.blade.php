@@ -123,6 +123,7 @@
                                         <th>IVA</th>
                                         <th>Total</th>
                                         <th>Precio Venta</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -157,6 +158,20 @@
                                         <td>${{ number_format($item->iva_amount, 2) }}</td>
                                         <td><strong>${{ number_format($item->total_cost, 2) }}</strong></td>
                                         <td><strong>${{ number_format($item->sale_price, 2) }}</strong></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ route('calculation-items.edit', $item) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('calculation-items.destroy', $item) }}" method="POST" onsubmit="return confirm('¿Está seguro de que desea eliminar este item?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
