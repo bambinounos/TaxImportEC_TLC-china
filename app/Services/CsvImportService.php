@@ -168,6 +168,8 @@ class CsvImportService
             throw new \Exception("Precio unitario FOB debe ser mayor a 0.");
         }
 
+        $totalFobValue = $quantity * $unitPriceFob;
+
         $itemData = [
             'part_number' => $data['part_number'],
             'description_en' => $data['description_en'],
@@ -178,7 +180,8 @@ class CsvImportService
             'unit_weight' => !empty($data['unit_weight']) ? (float) $data['unit_weight'] : null,
             'quantity' => $quantity,
             'unit_price_fob' => $unitPriceFob,
-            'total_fob_value' => $quantity * $unitPriceFob,
+            'total_fob_value' => $totalFobValue,
+            'cif_value' => $totalFobValue,
         ];
 
         if ($itemData['ice_exempt'] && empty($itemData['ice_exempt_reason'])) {
