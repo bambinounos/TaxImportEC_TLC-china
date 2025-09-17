@@ -96,8 +96,11 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Productos Importados</h5>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
-                                    <i class="fas fa-upload"></i> Importar Más
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                                    <i class="fas fa-sync-alt"></i> Sincronizar CSV
+                                </button>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createItemModal">
+                                    <i class="fas fa-plus"></i> Agregar Item
                                 </button>
                                 <form method="POST" action="{{ route('calculations.calculate', $calculation) }}" class="d-inline">
                                     @csrf
@@ -257,23 +260,118 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Importar Productos Adicionales</h5>
+                <h5 class="modal-title">Sincronizar Productos desde CSV</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ route('calculations.import-csv', $calculation) }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong>Atención:</strong> Este proceso reemplazará la lista de productos actual con el contenido del archivo CSV. Los productos existentes que no estén en el archivo serán eliminados.
+                    </div>
                     <div class="mb-3">
                         <label for="csv_file" class="form-label">Archivo CSV</label>
                         <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv,.txt" required>
                         <div class="form-text">
-                            El archivo debe contener las columnas: description_en, quantity, unit_price_fob, hs_code (opcional), unit_weight (opcional), ice_exempt (opcional), ice_exempt_reason (opcional)
+                            Columnas requeridas: <strong>part_number, description_en, quantity, unit_price_fob</strong>.
+                            <br>
+                            Columnas opcionales: description_es, unit_weight, hs_code, ice_exempt, ice_exempt_reason.
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Importar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Sincronizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Item Modal -->
+<div class="modal fade" id="createItemModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Nuevo Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ route('calculations.items.store', $calculation) }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Part Number</label>
+                                <input type="text" class="form-control" name="part_number" value="{{ old('part_number') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Descripción en Inglés</label>
+                                <input type="text" class="form-control" name="description_en" value="{{ old('description_en') }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Descripción en Español</label>
+                                <input type="text" class="form-control" name="description_es" value="{{ old('description_es') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Código Arancelario (HS)</label>
+                                <input type="text" class="form-control" name="hs_code" value="{{ old('hs_code') }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Cantidad</label>
+                                <input type="number" step="1" min="1" class="form-control" name="quantity" value="{{ old('quantity') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Precio Unitario FOB (USD)</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" name="unit_price_fob" value="{{ old('unit_price_fob') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Peso Unitario (Kg)</label>
+                                <input type="number" step="0.01" min="0" class="form-control" name="unit_weight" value="{{ old('unit_weight') }}">
+                            </div>
+                        </div>
+                    </div>
+                     <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Exención ICE</label>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="ice_exempt" value="1" {{ old('ice_exempt') ? 'checked' : '' }}>
+                                    <label class="form-check-label">Exento de ICE</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Razón de Exención ICE</label>
+                                <input type="text" class="form-control" name="ice_exempt_reason" value="{{ old('ice_exempt_reason') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Agregar Item
+                    </button>
                 </div>
             </form>
         </div>

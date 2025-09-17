@@ -30,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('calculation-items', CalculationItemController::class)->only([
         'edit', 'update', 'destroy'
     ]);
+    Route::post('/calculations/{calculation}/items', [CalculationItemController::class, 'store'])->name('calculations.items.store');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
