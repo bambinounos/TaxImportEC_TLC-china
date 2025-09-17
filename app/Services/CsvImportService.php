@@ -79,6 +79,10 @@ class CsvImportService
     protected function parseCsvFile(UploadedFile $file): array
     {
         $content = file_get_contents($file->getPathname());
+
+        if (substr($content, 0, 3) === "\xEF\xBB\xBF") {
+            $content = substr($content, 3);
+        }
         
         $encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
         if ($encoding !== 'UTF-8') {

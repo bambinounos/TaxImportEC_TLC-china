@@ -27,6 +27,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/calculations/{calculation}/export-excel', [CalculationController::class, 'exportExcel'])
         ->name('calculations.export-excel');
 
+    Route::resource('calculation-items', CalculationItemController::class)->only([
+        'edit', 'update', 'destroy'
+    ]);
+
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::get('/tariff-codes', [AdminController::class, 'tariffCodes'])->name('tariff-codes');

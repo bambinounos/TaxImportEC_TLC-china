@@ -82,33 +82,52 @@ function addProduct() {
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Descripción del Producto</label>
-                            <input type="text" class="form-control" name="products[${productIndex}][description]" required>
+                            <label class="form-label">Part Number</label>
+                            <input type="text" class="form-control" name="products[${productIndex}][part_number]">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Código Arancelario (HS)</label>
-                            <input type="text" class="form-control" name="products[${productIndex}][hs_code]" 
-                                   placeholder="Ej: 0101210000" required>
+                            <label class="form-label">Descripción en Inglés</label>
+                            <input type="text" class="form-control" name="products[${productIndex}][description_en]" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Descripción en Español</label>
+                            <input type="text" class="form-control" name="products[${productIndex}][description_es]">
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Código Arancelario (HS)</label>
+                            <input type="text" class="form-control" name="products[${productIndex}][hs_code]"
+                                   placeholder="Ej: 0101210000">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="mb-3">
                             <label class="form-label">Cantidad</label>
-                            <input type="number" step="0.01" min="0.01" class="form-control" 
+                            <input type="number" step="0.01" min="0.01" class="form-control"
                                    name="products[${productIndex}][quantity]" required>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="mb-3">
-                            <label class="form-label">Valor Unitario (USD)</label>
-                            <input type="number" step="0.01" min="0.01" class="form-control" 
-                                   name="products[${productIndex}][unit_value]" required>
+                            <label class="form-label">Precio Unitario FOB (USD)</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control"
+                                   name="products[${productIndex}][unit_price_fob]" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label">Peso Unitario (Kg)</label>
+                            <input type="number" step="0.01" min="0" class="form-control"
+                                   name="products[${productIndex}][unit_weight]">
                         </div>
                     </div>
                     <div class="col-md-4">
