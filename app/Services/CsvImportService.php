@@ -50,7 +50,7 @@ class CsvImportService
                 if ($index === 0) continue;
                 
                 try {
-                    $item = $this->createCalculationItem($row, $calculation, $index + 1);
+                    $item = $this->createCalculationItem($row, $csvData[0], $calculation, $index + 1);
                     if ($item) {
                         $results['success']++;
                         
@@ -108,10 +108,10 @@ class CsvImportService
         }
     }
 
-    protected function createCalculationItem(array $row, Calculation $calculation, int $rowNumber): ?CalculationItem
+    protected function createCalculationItem(array $row, array $headers, Calculation $calculation, int $rowNumber): ?CalculationItem
     {
-        $headers = array_map('strtolower', array_map('trim', $row));
-        $data = array_combine($headers, $row);
+        $normalizedHeaders = array_map('strtolower', array_map('trim', $headers));
+        $data = array_combine($normalizedHeaders, $row);
 
         $requiredFields = [
             'description_en' => $data['description_en'] ?? '',
