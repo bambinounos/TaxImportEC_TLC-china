@@ -178,6 +178,10 @@ class CsvImportService
             'unit_price_fob' => $unitPriceFob,
             'total_fob_value' => $totalFobValue,
             'cif_value' => $totalFobValue,
+            'total_cost' => $totalFobValue,
+            'unit_cost' => $unitPriceFob,
+            'sale_price' => $totalFobValue,
+            'unit_sale_price' => $unitPriceFob,
         ];
 
         if ($itemData['ice_exempt'] && empty($itemData['ice_exempt_reason'])) {
