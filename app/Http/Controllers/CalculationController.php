@@ -176,10 +176,13 @@ class CalculationController extends Controller
             $itemsToProcess = collect();
             foreach ($importData['toUpdate'] as $updateInfo) {
                 $updateInfo['item']->fill($updateInfo['data']);
+                $updateInfo['item']->save();
                 $itemsToProcess->push($updateInfo['item']);
             }
             
             foreach ($importData['toCreate'] as $newItem) {
+                $newItem->calculation_id = $calculation->id;
+                $newItem->save();
                 $itemsToProcess->push($newItem);
             }
 
