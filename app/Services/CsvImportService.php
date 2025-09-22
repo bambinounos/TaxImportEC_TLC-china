@@ -177,6 +177,7 @@ class CsvImportService
             'quantity' => $quantity,
             'unit_price_fob' => $unitPriceFob,
             'total_fob_value' => $totalFobValue,
+            'cif_value' => $totalFobValue,
         ];
 
         if ($itemData['ice_exempt'] && empty($itemData['ice_exempt_reason'])) {
