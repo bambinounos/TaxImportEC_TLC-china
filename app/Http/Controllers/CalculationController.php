@@ -80,6 +80,8 @@ class CalculationController extends Controller
             ]);
 
             foreach ($request->products as $productData) {
+                $totalFobValue = $productData['quantity'] * $productData['unit_price_fob'];
+                
                 CalculationItem::create([
                     'calculation_id' => $calculation->id,
                     'part_number' => $productData['part_number'] ?? null,
@@ -88,7 +90,12 @@ class CalculationController extends Controller
                     'hs_code' => $productData['hs_code'] ?? null,
                     'quantity' => $productData['quantity'],
                     'unit_price_fob' => $productData['unit_price_fob'],
-                    'total_fob_value' => $productData['quantity'] * $productData['unit_price_fob'],
+                    'total_fob_value' => $totalFobValue,
+                    'cif_value' => $totalFobValue,
+                    'total_cost' => $totalFobValue,
+                    'unit_cost' => $productData['unit_price_fob'],
+                    'sale_price' => $totalFobValue,
+                    'unit_sale_price' => $productData['unit_price_fob'],
                     'unit_weight' => $productData['unit_weight'] ?? null,
                     'ice_exempt' => $productData['ice_exempt'] ?? false,
                     'ice_exempt_reason' => $productData['ice_exempt_reason'] ?? null,
@@ -182,6 +189,14 @@ class CalculationController extends Controller
             
             foreach ($importData['toCreate'] as $newItem) {
                 $newItem->calculation_id = $calculation->id;
+                
+                \Log::info('CSV Import: About to save item', [
+                    'part_number' => $newItem->part_number,
+                    'cif_value' => $newItem->cif_value,
+                    'total_fob_value' => $newItem->total_fob_value,
+                    'attributes' => $newItem->getAttributes()
+                ]);
+                
                 $newItem->save();
                 $itemsToProcess->push($newItem);
                 
