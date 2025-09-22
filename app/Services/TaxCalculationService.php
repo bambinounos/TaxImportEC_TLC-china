@@ -16,7 +16,16 @@ class TaxCalculationService
         $this->updateCalculationTotals($calculation);
         
         foreach ($calculation->items as $item) {
-            $this->calculateItemTaxes($item, $calculation);
+            try {
+                $this->calculateItemTaxes($item, $calculation);
+            } catch (\Exception $e) {
+                \Log::error('Tax calculation failed for item', [
+                    'item_id' => $item->id,
+                    'part_number' => $item->part_number,
+                    'error' => $e->getMessage()
+                ]);
+                throw $e;
+            }
         }
         
         $this->updateCalculationTotals($calculation);

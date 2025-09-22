@@ -184,15 +184,42 @@ class CalculationController extends Controller
                 $newItem->calculation_id = $calculation->id;
                 $newItem->save();
                 $itemsToProcess->push($newItem);
+                
+                \Log::info('CSV Import: Saved new item', [
+                    'item_id' => $newItem->id,
+                    'part_number' => $newItem->part_number,
+                    'calculation_id' => $newItem->calculation_id
+                ]);
             }
 
             $calculation->setRelation('items', $itemsToProcess);
 
+            \Log::info('CSV Import: About to calculate taxes', [
+                'calculation_id' => $calculation->id,
+                'items_count' => $itemsToProcess->count()
+            ]);
+
             if ($itemsToProcess->isNotEmpty()) {
-                $this->taxCalculationService->calculateTaxes($calculation);
+                try {
+                    $this->taxCalculationService->calculateTaxes($calculation);
+                    \Log::info('CSV Import: Tax calculation completed successfully');
+                } catch (\Exception $e) {
+                    \Log::error('CSV Import: Tax calculation failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    throw $e;
+                }
             }
 
             DB::commit();
+            
+            \Log::info('CSV Import: Transaction committed successfully', [
+                'calculation_id' => $calculation->id,
+                'created_count' => count($importData['toCreate']),
+                'updated_count' => count($importData['toUpdate']),
+                'deleted_count' => count($importData['toDelete'])
+            ]);
 
             $parts = [];
             if (count($importData['toCreate']) > 0) $parts[] = count($importData['toCreate']) . " productos creados";
