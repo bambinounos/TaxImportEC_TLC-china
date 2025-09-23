@@ -120,6 +120,11 @@
                             </div>
                         </div>
 
+                        @include('calculations.partials.local-expenses', [
+                            'defaultPreTaxCosts' => \App\Models\SystemSetting::get('default_additional_costs_pre_tax', []),
+                            'defaultPostTaxCosts' => \App\Models\SystemSetting::get('default_additional_costs_post_tax', [])
+                        ])
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{{ route('calculations.index') }}" class="btn btn-secondary me-md-2">Cancelar</a>
                             <button type="submit" class="btn btn-primary">Crear Cálculo</button>

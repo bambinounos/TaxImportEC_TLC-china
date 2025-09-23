@@ -126,7 +126,34 @@ class CalculationController extends Controller
             'freight_cost' => 'required|numeric|min:0',
             'insurance_rate' => 'required|numeric|min:0|max:100',
             'profit_margin_percent' => 'required|numeric|min:0|max:1000',
+            'additional_costs_pre_tax.*.name' => 'nullable|string|max:255',
+            'additional_costs_pre_tax.*.amount' => 'nullable|numeric|min:0',
+            'additional_costs_post_tax.*.name' => 'nullable|string|max:255',
+            'additional_costs_post_tax.*.amount' => 'nullable|numeric|min:0',
+            'additional_costs_post_tax.*.iva_applies' => 'nullable|boolean',
         ]);
+
+        // Process the costs into the correct format
+        $preTaxCosts = [];
+        if ($request->has('additional_costs_pre_tax')) {
+            foreach ($request->additional_costs_pre_tax as $cost) {
+                if (!empty($cost['name']) && isset($cost['amount'])) {
+                    $preTaxCosts[$cost['name']] = (float) $cost['amount'];
+                }
+            }
+        }
+
+        $postTaxCosts = [];
+        if ($request->has('additional_costs_post_tax')) {
+            foreach ($request->additional_costs_post_tax as $cost) {
+                if (!empty($cost['name']) && isset($cost['amount'])) {
+                    $postTaxCosts[$cost['name']] = [
+                        'amount' => (float) $cost['amount'],
+                        'iva_applies' => isset($cost['iva_applies']) && $cost['iva_applies']
+                    ];
+                }
+            }
+        }
 
         $calculation = Calculation::create([
             'name' => $request->name,
@@ -137,6 +164,8 @@ class CalculationController extends Controller
             'proration_method' => $request->proration_method,
             'freight_cost' => $request->freight_cost,
             'insurance_rate' => $request->insurance_rate,
+            'additional_costs_pre_tax' => $preTaxCosts,
+            'additional_costs_post_tax' => $postTaxCosts,
             'profit_margin_percent' => $request->profit_margin_percent,
         ]);
 

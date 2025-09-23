@@ -66,6 +66,23 @@ class Calculation extends Model
             return 0;
         }
 
-        return array_sum(array_values($this->additional_costs_post_tax));
+        $total = 0;
+        foreach ($this->additional_costs_post_tax as $cost) {
+            if (is_array($cost) && isset($cost['amount'])) {
+                $amount = $cost['amount'];
+                $ivaApplies = $cost['iva_applies'] ?? false;
+                
+                if ($ivaApplies) {
+                    $amount = $amount * 1.15; // Apply 15% IVA (important-comment)
+                }
+                
+                $total += $amount;
+            } else {
+                // Backward compatibility for simple numeric values
+                $total += is_numeric($cost) ? $cost : 0;
+            }
+        }
+        
+        return $total;
     }
 }

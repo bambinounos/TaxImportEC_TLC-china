@@ -83,7 +83,22 @@ class TaxCalculationService
 
         $prorationFactor = $this->getProrationFactor($item, $calculation, $totalForProration);
         
-        $totalAdditionalPostTax = $calculation->getTotalAdditionalCostsPostTax();
+        $totalAdditionalPostTax = 0;
+        if ($calculation->additional_costs_post_tax) {
+            foreach ($calculation->additional_costs_post_tax as $cost) {
+                if (is_array($cost) && isset($cost['amount'])) {
+                    $amount = $cost['amount'];
+                    if ($cost['iva_applies'] ?? false) {
+                        $amount *= 1.15; // Apply 15% IVA (important-comment)
+                    }
+                    $totalAdditionalPostTax += $amount;
+                } else {
+                    // Backward compatibility
+                    $totalAdditionalPostTax += is_numeric($cost) ? $cost : 0;
+                }
+            }
+        }
+        
         $item->prorated_additional_post_tax = $totalAdditionalPostTax * $prorationFactor;
     }
 

@@ -14,7 +14,7 @@ return new class extends Migration
             $table->text('description_en');
             $table->text('description_es');
             $table->decimal('base_tariff_rate', 8, 4)->nullable();
-            $table->decimal('iva_rate', 8, 4)->default(12.0);
+            $table->decimal('iva_rate', 8, 4)->default(15.0);
             $table->string('unit', 10)->nullable();
             $table->boolean('has_ice')->default(false);
             $table->boolean('is_active')->default(true);
