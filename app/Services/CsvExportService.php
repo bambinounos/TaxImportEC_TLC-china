@@ -30,6 +30,8 @@ class CsvExportService
             'Valor CIF',
             'Tasa Arancelaria (%)',
             'Arancel',
+            'Tasa FODINFA (%)',
+            'FODINFA',
             'Tasa ICE (%)',
             'ICE',
             'Tasa IVA (%)',
@@ -70,6 +72,8 @@ class CsvExportService
                 number_format($item->cif_value, 2),
                 number_format($item->tariff_rate, 4),
                 number_format($item->tariff_amount, 4),
+                number_format($item->fodinfa_rate, 4),
+                number_format($item->fodinfa_amount, 4),
                 number_format($item->ice_rate, 4),
                 number_format($item->ice_amount, 4),
                 number_format($item->iva_rate, 4),
@@ -116,16 +120,18 @@ class CsvExportService
             'N1' => 'Valor CIF',
             'O1' => 'Tasa Arancelaria (%)',
             'P1' => 'Arancel',
-            'Q1' => 'Tasa ICE (%)',
-            'R1' => 'ICE',
-            'S1' => 'Tasa IVA (%)',
-            'T1' => 'IVA',
-            'U1' => 'Total Impuestos',
-            'V1' => 'Otros Costos Post-Impuestos',
-            'W1' => 'Costo Total',
-            'X1' => 'Costo Unitario',
-            'Y1' => 'Precio de Venta',
-            'Z1' => 'Precio Unit. Venta',
+            'Q1' => 'Tasa FODINFA (%)',
+            'R1' => 'FODINFA',
+            'S1' => 'Tasa ICE (%)',
+            'T1' => 'ICE',
+            'U1' => 'Tasa IVA (%)',
+            'V1' => 'IVA',
+            'W1' => 'Total Impuestos',
+            'X1' => 'Otros Costos Post-Impuestos',
+            'Y1' => 'Costo Total',
+            'Z1' => 'Costo Unitario',
+            'AA1' => 'Precio de Venta',
+            'AB1' => 'Precio Unit. Venta',
         ];
 
         foreach ($headers as $cell => $header) {
@@ -139,7 +145,7 @@ class CsvExportService
                 'startColor' => ['rgb' => 'E0E0E0']
             ]
         ];
-        $sheet->getStyle('A1:Z1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:AB1')->applyFromArray($headerStyle);
 
         $row = 2;
         foreach ($calculation->items as $item) {
@@ -159,16 +165,18 @@ class CsvExportService
             $sheet->setCellValue("N{$row}", $item->cif_value);
             $sheet->setCellValue("O{$row}", $item->tariff_rate);
             $sheet->setCellValue("P{$row}", $item->tariff_amount);
-            $sheet->setCellValue("Q{$row}", $item->ice_rate);
-            $sheet->setCellValue("R{$row}", $item->ice_amount);
-            $sheet->setCellValue("S{$row}", $item->iva_rate);
-            $sheet->setCellValue("T{$row}", $item->iva_amount);
-            $sheet->setCellValue("U{$row}", $item->total_taxes);
-            $sheet->setCellValue("V{$row}", $item->prorated_additional_post_tax);
-            $sheet->setCellValue("W{$row}", $item->total_cost);
-            $sheet->setCellValue("X{$row}", $item->unit_cost);
-            $sheet->setCellValue("Y{$row}", $item->sale_price);
-            $sheet->setCellValue("Z{$row}", $item->unit_sale_price);
+            $sheet->setCellValue("Q{$row}", $item->fodinfa_rate);
+            $sheet->setCellValue("R{$row}", $item->fodinfa_amount);
+            $sheet->setCellValue("S{$row}", $item->ice_rate);
+            $sheet->setCellValue("T{$row}", $item->ice_amount);
+            $sheet->setCellValue("U{$row}", $item->iva_rate);
+            $sheet->setCellValue("V{$row}", $item->iva_amount);
+            $sheet->setCellValue("W{$row}", $item->total_taxes);
+            $sheet->setCellValue("X{$row}", $item->prorated_additional_post_tax);
+            $sheet->setCellValue("Y{$row}", $item->total_cost);
+            $sheet->setCellValue("Z{$row}", $item->unit_cost);
+            $sheet->setCellValue("AA{$row}", $item->sale_price);
+            $sheet->setCellValue("AB{$row}", $item->unit_sale_price);
             
             $row++;
         }
@@ -176,6 +184,8 @@ class CsvExportService
         foreach (range('A', 'Z') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
+        $sheet->getColumnDimension('AA')->setAutoSize(true);
+        $sheet->getColumnDimension('AB')->setAutoSize(true);
 
         $filename = storage_path('app/exports/calculation_' . $calculation->id . '_' . date('Y-m-d_H-i-s') . '.xlsx');
         

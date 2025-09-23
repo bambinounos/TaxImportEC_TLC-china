@@ -122,6 +122,7 @@
                                         <th>Precio FOB</th>
                                         <th>CIF</th>
                                         <th>Arancel</th>
+                                        <th>FODINFA</th>
                                         <th>ICE</th>
                                         <th>IVA</th>
                                         <th>Total</th>
@@ -152,6 +153,7 @@
                                         <td>${{ number_format($item->unit_price_fob, 2) }}</td>
                                         <td>${{ number_format($item->cif_value, 2) }}</td>
                                         <td>${{ number_format($item->tariff_amount, 2) }}</td>
+                                        <td>${{ number_format($item->fodinfa_amount, 2) }}</td>
                                         <td>
                                             ${{ number_format($item->ice_amount, 2) }}
                                             @if($item->ice_exempt)
@@ -183,6 +185,7 @@
                                         <th colspan="5">TOTALES</th>
                                         <th>${{ number_format($calculation->items->sum('cif_value'), 2) }}</th>
                                         <th>${{ number_format($calculation->items->sum('tariff_amount'), 2) }}</th>
+                                        <th>${{ number_format($calculation->items->sum('fodinfa_amount'), 2) }}</th>
                                         <th>${{ number_format($calculation->items->sum('ice_amount'), 2) }}</th>
                                         <th>${{ number_format($calculation->items->sum('iva_amount'), 2) }}</th>
                                         <th><strong>${{ number_format($calculation->items->sum('total_cost'), 2) }}</strong></th>
@@ -230,6 +233,10 @@
                                             <tr>
                                                 <td>Aranceles:</td>
                                                 <td class="text-end">${{ number_format($calculation->items->sum('tariff_amount'), 2) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>FODINFA (0.5%):</td>
+                                                <td class="text-end">${{ number_format($calculation->items->sum('fodinfa_amount'), 2) }}</td>
                                             </tr>
                                             <tr>
                                                 <td>ICE:</td>

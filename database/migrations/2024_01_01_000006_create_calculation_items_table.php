@@ -27,6 +27,8 @@ return new class extends Migration
             $table->decimal('tariff_amount', 10, 4)->default(0);
             $table->decimal('ice_rate', 8, 4)->default(0);
             $table->decimal('ice_amount', 10, 4)->default(0);
+            $table->decimal('fodinfa_rate', 8, 4)->default(0.5);
+            $table->decimal('fodinfa_amount', 10, 4)->default(0);
             $table->decimal('iva_rate', 8, 4)->default(15.00);
             $table->decimal('iva_amount', 10, 4)->default(0);
             $table->decimal('total_taxes', 10, 4)->default(0);

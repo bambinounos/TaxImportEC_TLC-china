@@ -50,7 +50,7 @@
                                 </div>
                             </div>
                             
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="form-group mb-3">
                                     <label for="iva_rate" class="form-label">IVA (%) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('iva_rate') is-invalid @enderror" 
@@ -59,6 +59,14 @@
                                     @error('iva_rate')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-3">
+                                    <label for="fodinfa_rate" class="form-label">FODINFA (%)</label>
+                                    <input type="number" class="form-control" id="fodinfa_rate" name="fodinfa_rate" 
+                                           value="0.5" step="0.01" min="0" max="100" readonly>
+                                    <div class="form-text">Tasa fija del 0.5% para todos los productos</div>
                                 </div>
                             </div>
                         </div>

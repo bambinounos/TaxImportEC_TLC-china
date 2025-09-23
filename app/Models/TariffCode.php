@@ -15,13 +15,19 @@ class TariffCode extends Model
         'description_es',
         'base_tariff_rate',
         'iva_rate',
+        'fodinfa_rate',
+        'unit',
         'has_ice',
         'is_active',
+        'hierarchy_level',
+        'parent_code',
+        'order_number',
     ];
 
     protected $casts = [
         'base_tariff_rate' => 'decimal:4',
         'iva_rate' => 'decimal:4',
+        'fodinfa_rate' => 'decimal:4',
         'has_ice' => 'boolean',
         'is_active' => 'boolean',
     ];

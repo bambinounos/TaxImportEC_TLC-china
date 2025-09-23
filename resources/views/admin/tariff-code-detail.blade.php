@@ -52,6 +52,10 @@
                                     <td><span class="badge bg-info fs-6">{{ number_format($tariffCode->iva_rate, 2) }}%</span></td>
                                 </tr>
                                 <tr>
+                                    <th>FODINFA:</th>
+                                    <td><span class="badge bg-info fs-6">0.5%</span> (Fijo para todos los productos)</td>
+                                </tr>
+                                <tr>
                                     <th>ICE:</th>
                                     <td>
                                         @if($tariffCode->has_ice)
