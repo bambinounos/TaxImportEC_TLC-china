@@ -346,6 +346,51 @@ class CalculationController extends Controller
         }
     }
 
+    public function updateLocalExpenses(Request $request, Calculation $calculation)
+    {
+        $this->authorize('update', $calculation);
+
+        $request->validate([
+            'additional_costs_pre_tax.*.name' => 'nullable|string|max:255',
+            'additional_costs_pre_tax.*.amount' => 'nullable|numeric|min:0',
+            'additional_costs_post_tax.*.name' => 'nullable|string|max:255',
+            'additional_costs_post_tax.*.amount' => 'nullable|numeric|min:0',
+            'additional_costs_post_tax.*.iva_applies' => 'nullable|boolean',
+        ]);
+
+        // Process the costs into the correct format
+        $preTaxCosts = [];
+        if ($request->has('additional_costs_pre_tax')) {
+            foreach ($request->additional_costs_pre_tax as $cost) {
+                if (!empty($cost['name']) && isset($cost['amount'])) {
+                    $preTaxCosts[$cost['name']] = (float) $cost['amount'];
+                }
+            }
+        }
+
+        $postTaxCosts = [];
+        if ($request->has('additional_costs_post_tax')) {
+            foreach ($request->additional_costs_post_tax as $cost) {
+                if (!empty($cost['name']) && isset($cost['amount'])) {
+                    $postTaxCosts[$cost['name']] = [
+                        'amount' => (float) $cost['amount'],
+                        'iva_applies' => isset($cost['iva_applies']) && $cost['iva_applies']
+                    ];
+                }
+            }
+        }
+
+        $calculation->update([
+            'additional_costs_pre_tax' => $preTaxCosts,
+            'additional_costs_post_tax' => $postTaxCosts,
+        ]);
+
+        $this->taxCalculationService->calculateTaxes($calculation);
+
+        return redirect()->route('calculations.show', $calculation)
+            ->with('success', 'Gastos locales actualizados y cálculo recalculado exitosamente.');
+    }
+
     public function destroy(Calculation $calculation)
     {
         $this->authorize('delete', $calculation);
