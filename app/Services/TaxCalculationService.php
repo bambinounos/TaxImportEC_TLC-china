@@ -39,10 +39,11 @@ class TaxCalculationService
                           $item->prorated_insurance + $item->prorated_additional_pre_tax;
 
         $this->calculateTariff($item, $calculation);
+        $this->calculateFodinfa($item);
         $this->calculateIce($item);
         $this->calculateIva($item);
         
-        $item->total_taxes = $item->tariff_amount + $item->ice_amount + $item->iva_amount;
+        $item->total_taxes = $item->tariff_amount + $item->fodinfa_amount + $item->ice_amount + $item->iva_amount;
         
         $this->proratePostTaxCosts($item, $calculation);
         
@@ -184,6 +185,12 @@ class TaxCalculationService
         }
     }
 
+    protected function calculateFodinfa(CalculationItem $item): void
+    {
+        $item->fodinfa_rate = 0.5;
+        $item->fodinfa_amount = $item->cif_value * ($item->fodinfa_rate / 100);
+    }
+
     protected function calculateIva(CalculationItem $item): void
     {
         $tariffCode = null;
@@ -196,7 +203,7 @@ class TaxCalculationService
         
         $item->iva_rate = $ivaRate;
         
-        $ivaBase = $item->cif_value + $item->tariff_amount + $item->ice_amount;
+        $ivaBase = $item->cif_value + $item->tariff_amount + $item->fodinfa_amount + $item->ice_amount;
         $item->iva_amount = $ivaBase * ($item->iva_rate / 100);
     }
 
