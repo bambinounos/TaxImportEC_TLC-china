@@ -98,6 +98,7 @@
                                         <th>Descripción (EN)</th>
                                         <th>Tarifa Base</th>
                                         <th>IVA</th>
+                                        <th>FODINFA</th>
                                         <th>ICE</th>
                                         <th>TLC</th>
                                         <th>Estado</th>
@@ -122,6 +123,7 @@
                                         </td>
                                         <td>{{ number_format($tariffCode->base_tariff_rate, 2) }}%</td>
                                         <td>{{ number_format($tariffCode->iva_rate, 2) }}%</td>
+                                        <td><span class="badge bg-info">0.5%</span></td>
                                         <td>
                                             @if($tariffCode->has_ice)
                                                 <span class="badge bg-warning">Sí</span>
