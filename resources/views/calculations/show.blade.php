@@ -384,4 +384,70 @@
         </div>
     </div>
 </div>
+        <!-- Local Expenses Configuration Section -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Configuración de Gastos Locales</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#localExpensesModal">
+                    <i class="fas fa-edit"></i> Editar Gastos
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Costos Pre-Impuestos</h6>
+                        @if($calculation->additional_costs_pre_tax)
+                            @foreach($calculation->additional_costs_pre_tax as $name => $amount)
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ $name }}</span>
+                                    <span>${{ number_format($amount, 2) }}</span>
+                                </div>
+                            @endforeach
+                        @else
+                            <p class="text-muted">No hay costos pre-impuestos configurados</p>
+                        @endif
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Costos Post-Impuestos</h6>
+                        @if($calculation->additional_costs_post_tax)
+                            @foreach($calculation->additional_costs_post_tax as $name => $cost)
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ $name }} @if(is_array($cost) && ($cost['iva_applies'] ?? false))<small class="text-info">(+IVA)</small>@endif</span>
+                                    <span>${{ number_format(is_array($cost) ? $cost['amount'] : $cost, 2) }}</span>
+                                </div>
+                            @endforeach
+                        @else
+                            <p class="text-muted">No hay costos post-impuestos configurados</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Local Expenses Edit Modal -->
+    <div class="modal fade" id="localExpensesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('calculations.update-local-expenses', $calculation) }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Gastos Locales</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @include('calculations.partials.local-expenses', [
+                            'defaultPreTaxCosts' => $calculation->additional_costs_pre_tax ?? [],
+                            'defaultPostTaxCosts' => $calculation->additional_costs_post_tax ?? []
+                        ])
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar y Recalcular</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection

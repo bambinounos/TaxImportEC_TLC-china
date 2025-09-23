@@ -39,6 +39,10 @@ class TlcSchedule extends Model
             return (float) $this->base_rate;
         }
 
+        if ($this->tlc_category === 'A0' || $this->reduction_type === 'immediate') {
+            return 0.0;
+        }
+
         $startYear = $this->start_date->year;
         $yearsElapsed = $year - $startYear;
 
@@ -52,10 +56,6 @@ class TlcSchedule extends Model
 
         if ($this->yearly_rates && isset($this->yearly_rates[$year])) {
             return (float) $this->yearly_rates[$year];
-        }
-
-        if ($this->reduction_type === 'immediate') {
-            return 0.0;
         }
 
         if ($this->reduction_type === 'linear') {
