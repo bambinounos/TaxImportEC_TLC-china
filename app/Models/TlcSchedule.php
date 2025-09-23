@@ -50,8 +50,9 @@ class TlcSchedule extends Model
             return 0.0;
         }
 
-        if ($this->yearly_rates && isset($this->yearly_rates[$year])) {
-            return (float) $this->yearly_rates[$year];
+        $yearKey = 'year_' . ($yearsElapsed + 1);
+        if ($this->yearly_rates && isset($this->yearly_rates[$yearKey])) {
+            return (float) $this->yearly_rates[$yearKey];
         }
 
         if ($this->reduction_type === 'immediate') {
