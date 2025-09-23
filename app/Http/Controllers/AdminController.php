@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SystemSetting;
 use App\Models\TariffCode;
 use App\Models\TlcSchedule;
 use Illuminate\Http\Request;
