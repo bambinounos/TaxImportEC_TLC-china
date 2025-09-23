@@ -113,7 +113,7 @@ class AdminController extends Controller
             'description_en' => $request->description_en,
             'description_es' => $request->description_es,
             'base_tariff_rate' => $request->base_tariff_rate,
-            'iva_rate' => $request->iva_rate ?? 12.0,
+            'iva_rate' => $request->iva_rate ?? 15.0,
             'unit' => $request->unit,
             'hierarchy_level' => $request->hierarchy_level,
             'parent_code' => $request->parent_code,
@@ -219,5 +219,44 @@ class AdminController extends Controller
         $reductionTypes = ['immediate', 'linear', 'staged'];
 
         return view('admin.tlc-schedules', compact('tlcSchedules', 'countries', 'reductionTypes'));
+    }
+
+    public function massUpdateIvaRate(Request $request)
+    {
+        $request->validate([
+            'new_iva_rate' => 'required|numeric|min:0|max:100',
+            'old_iva_rate' => 'nullable|numeric|min:0|max:100'
+        ]);
+
+        $query = TariffCode::query();
+        
+        if ($request->old_iva_rate !== null) {
+            $query->where('iva_rate', $request->old_iva_rate);
+        }
+        
+        $updated = $query->update(['iva_rate' => $request->new_iva_rate]);
+        
+        return redirect()->back()->with('success', "Actualizado IVA en {$updated} códigos arancelarios.");
+    }
+
+    public function localExpensesConfig()
+    {
+        $preTaxDefaults = SystemSetting::get('default_additional_costs_pre_tax', []);
+        $postTaxDefaults = SystemSetting::get('default_additional_costs_post_tax', []);
+        
+        return view('admin.local-expenses-config', compact('preTaxDefaults', 'postTaxDefaults'));
+    }
+
+    public function updateLocalExpensesConfig(Request $request)
+    {
+        $request->validate([
+            'pre_tax_costs' => 'required|array',
+            'post_tax_costs' => 'required|array',
+        ]);
+
+        SystemSetting::set('default_additional_costs_pre_tax', $request->pre_tax_costs);
+        SystemSetting::set('default_additional_costs_post_tax', $request->post_tax_costs);
+
+        return redirect()->back()->with('success', 'Configuración de gastos locales actualizada.');
     }
 }

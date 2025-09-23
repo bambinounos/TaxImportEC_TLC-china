@@ -40,16 +40,31 @@ class SystemSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'default_additional_costs_pre_tax',
-                'value' => '{"gastos_bancarios": 0, "gastos_documentarios": 0}',
+                'value' => json_encode([
+                    'gastos_bancarios' => 0,
+                    'gastos_documentarios' => 100,
+                    'agente_aduana' => 327,
+                    'emision_ecas' => 0,
+                    'almacenaje' => 0,
+                    'transporte_terrestre' => 0,
+                    'devolucion_contenedor' => 0,
+                    'demoraje' => 0
+                ]),
                 'type' => 'json',
                 'description' => 'Costos adicionales por defecto antes de impuestos',
                 'is_user_configurable' => true,
             ],
             [
                 'key' => 'default_additional_costs_post_tax',
-                'value' => '{"flete_terrestre": 0, "gastos_bodega_aduana": 0, "gastos_naviera": 0, "agente_aduana": 0, "devolucion_contenedores": 0}',
+                'value' => json_encode([
+                    'flete_terrestre' => ['amount' => 0, 'iva_applies' => false],
+                    'gastos_bodega_aduana' => ['amount' => 0, 'iva_applies' => true],
+                    'gastos_naviera' => ['amount' => 195, 'iva_applies' => true],
+                    'agente_aduana_post' => ['amount' => 0, 'iva_applies' => true],
+                    'devolucion_contenedores' => ['amount' => 0, 'iva_applies' => false]
+                ]),
                 'type' => 'json',
-                'description' => 'Costos adicionales por defecto después de impuestos',
+                'description' => 'Costos adicionales por defecto después de impuestos con IVA',
                 'is_user_configurable' => true,
             ],
         ];

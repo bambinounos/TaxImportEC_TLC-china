@@ -43,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/tariff-codes/{hsCode}', [AdminController::class, 'updateTariffCode'])->name('tariff-codes.update');
         Route::delete('/tariff-codes/{hsCode}', [AdminController::class, 'destroyTariffCode'])->name('tariff-codes.destroy');
         Route::get('/tlc-schedules', [AdminController::class, 'tlcSchedules'])->name('tlc-schedules');
+        Route::get('/local-expenses-config', [AdminController::class, 'localExpensesConfig'])->name('local-expenses-config');
+        Route::post('/local-expenses-config', [AdminController::class, 'updateLocalExpensesConfig'])->name('local-expenses-config.update');
+        Route::post('/mass-update-iva', [AdminController::class, 'massUpdateIvaRate'])->name('mass-update-iva');
     });
 });
 

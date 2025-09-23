@@ -131,5 +131,37 @@
             </div>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Herramientas Administrativas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ route('admin.local-expenses-config') }}" class="btn btn-outline-success btn-lg w-100">
+                                <i class="fas fa-cogs"></i><br>
+                                Configuración Gastos Locales
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ route('admin.tariff-codes') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-edit"></i><br>
+                                Administrar Partidas
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ route('admin.tlc-schedules') }}" class="btn btn-outline-info btn-lg w-100">
+                                <i class="fas fa-handshake"></i><br>
+                                Ver Cronogramas TLC
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

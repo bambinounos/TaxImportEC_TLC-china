@@ -54,7 +54,7 @@
                                 <div class="form-group mb-3">
                                     <label for="iva_rate" class="form-label">IVA (%) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('iva_rate') is-invalid @enderror" 
-                                           id="iva_rate" name="iva_rate" value="{{ old('iva_rate', 12) }}" 
+                                           id="iva_rate" name="iva_rate" value="{{ old('iva_rate', 15) }}" 
                                            step="0.01" min="0" max="100" required>
                                     @error('iva_rate')
                                         <div class="invalid-feedback">{{ $message }}</div>
