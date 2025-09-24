@@ -385,6 +385,8 @@ class CalculationController extends Controller
             'additional_costs_post_tax' => $postTaxCosts,
         ]);
 
+        $calculation->refresh();
+
         $this->taxCalculationService->calculateTaxes($calculation);
 
         return redirect()->route('calculations.show', $calculation)
