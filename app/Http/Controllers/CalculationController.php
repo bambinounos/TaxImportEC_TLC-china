@@ -350,6 +350,13 @@ class CalculationController extends Controller
     {
         $this->authorize('update', $calculation);
 
+        \Log::info('Local Expenses Update: Starting', [
+            'calculation_id' => $calculation->id,
+            'request_data' => $request->all(),
+            'original_pre_tax' => $calculation->additional_costs_pre_tax,
+            'original_post_tax' => $calculation->additional_costs_post_tax
+        ]);
+
         $request->validate([
             'additional_costs_pre_tax.*.name' => 'nullable|string|max:255',
             'additional_costs_pre_tax.*.amount' => 'nullable|numeric|min:0',
@@ -380,14 +387,27 @@ class CalculationController extends Controller
             }
         }
 
+        \Log::info('Local Expenses Update: Processed costs', [
+            'pre_tax_costs' => $preTaxCosts,
+            'post_tax_costs' => $postTaxCosts
+        ]);
+
         $calculation->update([
             'additional_costs_pre_tax' => $preTaxCosts,
             'additional_costs_post_tax' => $postTaxCosts,
         ]);
 
-        $calculation->refresh();
+        $calculation = $calculation->fresh();
+
+        \Log::info('Local Expenses Update: After database update', [
+            'updated_pre_tax' => $calculation->additional_costs_pre_tax,
+            'updated_post_tax' => $calculation->additional_costs_post_tax,
+            'items_count' => $calculation->items->count()
+        ]);
 
         $this->taxCalculationService->calculateTaxes($calculation);
+
+        \Log::info('Local Expenses Update: Tax calculation completed');
 
         return redirect()->route('calculations.show', $calculation)
             ->with('success', 'Gastos locales actualizados y cálculo recalculado exitosamente.');

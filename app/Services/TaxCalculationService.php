@@ -13,6 +13,12 @@ class TaxCalculationService
 {
     public function calculateTaxes(Calculation $calculation): void
     {
+        \Log::info('TaxCalculationService: Starting calculation', [
+            'calculation_id' => $calculation->id,
+            'pre_tax_total' => $calculation->getTotalAdditionalCostsPreTax(),
+            'post_tax_total' => $calculation->getTotalAdditionalCostsPostTax()
+        ]);
+
         $this->updateCalculationTotals($calculation);
         
         foreach ($calculation->items as $item) {
@@ -29,6 +35,11 @@ class TaxCalculationService
         }
         
         $this->updateCalculationTotals($calculation);
+        
+        \Log::info('TaxCalculationService: Calculation completed', [
+            'calculation_id' => $calculation->id,
+            'final_total_cost' => $calculation->total_final_cost
+        ]);
     }
 
     protected function calculateItemTaxes(CalculationItem $item, Calculation $calculation): void
@@ -85,6 +96,14 @@ class TaxCalculationService
         $prorationFactor = $this->getProrationFactor($item, $calculation, $totalForProration);
         
         $totalAdditionalPostTax = $calculation->getTotalAdditionalCostsPostTax();
+        
+        \Log::info('Prorating post-tax costs', [
+            'item_id' => $item->id,
+            'part_number' => $item->part_number,
+            'total_additional_post_tax' => $totalAdditionalPostTax,
+            'proration_factor' => $prorationFactor,
+            'prorated_amount' => $totalAdditionalPostTax * $prorationFactor
+        ]);
         
         $item->prorated_additional_post_tax = $totalAdditionalPostTax * $prorationFactor;
     }
