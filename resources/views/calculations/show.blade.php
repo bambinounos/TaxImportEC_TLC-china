@@ -384,6 +384,32 @@
         </div>
     </div>
 </div>
+        <!-- Profit Margin Configuration Section -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Configuración de Margen de Ganancia</h5>
+                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#profitMarginModal">
+                    <i class="fas fa-percentage"></i> Editar Margen
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><strong>Margen de Ganancia Actual:</strong></span>
+                            <span class="badge bg-success fs-6">{{ number_format($calculation->profit_margin_percent, 2) }}%</span>
+                        </div>
+                        <hr>
+                        <small class="text-muted">
+                            Este margen se aplica sobre el costo total de cada producto para calcular el precio de venta.
+                            <br>
+                            <strong>Fórmula:</strong> Precio de Venta = Costo Total × (1 + Margen/100)
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Local Expenses Configuration Section -->
         <div class="card mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -421,6 +447,51 @@
                         @endif
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit Margin Edit Modal -->
+    <div class="modal fade" id="profitMarginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('calculations.update-profit-margin', $calculation) }}" id="profitMarginForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Margen de Ganancia</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="profit_margin_percent" class="form-label">Margen de Ganancia (%)</label>
+                            <input type="number" step="0.01" min="0" max="1000" class="form-control" 
+                                   id="profit_margin_percent" name="profit_margin_percent" 
+                                   value="{{ $calculation->profit_margin_percent }}" required>
+                            <div class="form-text">
+                                Ingrese el porcentaje de ganancia que desea aplicar sobre el costo total de cada producto.
+                                <br>
+                                <strong>Ejemplo:</strong> Si ingresa 25%, el precio de venta será el costo total × 1.25
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Nota:</strong> Al cambiar el margen de ganancia, todos los precios de venta se recalcularán automáticamente.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Actualizar y Recalcular</button>
+                    </div>
+                </form>
+
+                <script>
+                document.getElementById('profitMarginForm').addEventListener('submit', function(e) {
+                    console.log('Profit margin form submission started');
+                    console.log('Form data:', new FormData(this));
+                    console.log('Form action:', this.action);
+                    console.log('Form method:', this.method);
+                });
+                </script>
             </div>
         </div>
     </div>

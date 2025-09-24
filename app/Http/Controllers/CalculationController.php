@@ -413,6 +413,43 @@ class CalculationController extends Controller
             ->with('success', 'Gastos locales actualizados y cálculo recalculado exitosamente.');
     }
 
+    public function updateProfitMargin(Request $request, Calculation $calculation)
+    {
+        $this->authorize('update', $calculation);
+
+        \Log::info('Profit Margin Update: Starting', [
+            'calculation_id' => $calculation->id,
+            'request_data' => $request->all(),
+            'original_profit_margin' => $calculation->profit_margin_percent
+        ]);
+
+        $request->validate([
+            'profit_margin_percent' => 'required|numeric|min:0|max:1000',
+        ]);
+
+        \Log::info('Profit Margin Update: Validation passed', [
+            'new_profit_margin' => $request->profit_margin_percent
+        ]);
+
+        $calculation->update([
+            'profit_margin_percent' => $request->profit_margin_percent,
+        ]);
+
+        $calculation = $calculation->fresh();
+
+        \Log::info('Profit Margin Update: After database update', [
+            'updated_profit_margin' => $calculation->profit_margin_percent,
+            'items_count' => $calculation->items->count()
+        ]);
+
+        $this->taxCalculationService->calculateTaxes($calculation);
+
+        \Log::info('Profit Margin Update: Tax calculation completed');
+
+        return redirect()->route('calculations.show', $calculation)
+            ->with('success', 'Margen de ganancia actualizado y cálculo recalculado exitosamente.');
+    }
+
     public function destroy(Calculation $calculation)
     {
         $this->authorize('delete', $calculation);
