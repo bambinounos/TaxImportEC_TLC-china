@@ -54,15 +54,25 @@ class Calculation extends Model
     public function getTotalAdditionalCostsPreTax(): float
     {
         if (!$this->additional_costs_pre_tax) {
+            \Log::info('No pre-tax costs found', ['calculation_id' => $this->id]);
             return 0;
         }
 
-        return array_sum(array_values($this->additional_costs_pre_tax));
+        $total = array_sum(array_values($this->additional_costs_pre_tax));
+        
+        \Log::info('Calculated pre-tax costs total', [
+            'calculation_id' => $this->id,
+            'costs' => $this->additional_costs_pre_tax,
+            'total' => $total
+        ]);
+
+        return $total;
     }
 
     public function getTotalAdditionalCostsPostTax(): float
     {
         if (!$this->additional_costs_post_tax) {
+            \Log::info('No post-tax costs found', ['calculation_id' => $this->id]);
             return 0;
         }
 
@@ -82,6 +92,12 @@ class Calculation extends Model
                 $total += is_numeric($cost) ? $cost : 0;
             }
         }
+        
+        \Log::info('Calculated post-tax costs total', [
+            'calculation_id' => $this->id,
+            'costs' => $this->additional_costs_post_tax,
+            'total' => $total
+        ]);
         
         return $total;
     }
