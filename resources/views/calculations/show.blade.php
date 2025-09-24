@@ -429,7 +429,7 @@
     <div class="modal fade" id="localExpensesModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form method="POST" action="{{ route('calculations.update-local-expenses', $calculation) }}">
+                <form method="POST" action="{{ route('calculations.update-local-expenses', $calculation) }}" id="localExpensesForm">
                     @csrf
                     @method('PUT')
                     <div class="modal-header">
@@ -437,7 +437,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        @include('calculations.partials.local-expenses', [
+                        @include('calculations.partials.local-expenses-modal', [
                             'defaultPreTaxCosts' => $calculation->additional_costs_pre_tax ?? [],
                             'defaultPostTaxCosts' => $calculation->additional_costs_post_tax ?? []
                         ])
@@ -447,6 +447,15 @@
                         <button type="submit" class="btn btn-primary">Guardar y Recalcular</button>
                     </div>
                 </form>
+
+                <script>
+                document.getElementById('localExpensesForm').addEventListener('submit', function(e) {
+                    console.log('Form submission started');
+                    console.log('Form data:', new FormData(this));
+                    console.log('Form action:', this.action);
+                    console.log('Form method:', this.method);
+                });
+                </script>
             </div>
         </div>
     </div>
