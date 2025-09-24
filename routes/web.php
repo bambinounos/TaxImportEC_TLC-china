@@ -23,6 +23,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('calculations.import-csv');
     Route::put('/calculations/{calculation}/local-expenses', [CalculationController::class, 'updateLocalExpenses'])
         ->name('calculations.update-local-expenses');
+    Route::put('/calculations/{calculation}/profit-margin', [CalculationController::class, 'updateProfitMargin'])
+        ->name('calculations.update-profit-margin');
     Route::post('/calculations/{calculation}/calculate', [CalculationController::class, 'calculate'])
         ->name('calculations.calculate');
     Route::get('/calculations/{calculation}/export-csv', [CalculationController::class, 'exportCsv'])
