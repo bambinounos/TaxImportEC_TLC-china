@@ -251,12 +251,34 @@ class AdminController extends Controller
     public function updateLocalExpensesConfig(Request $request)
     {
         $request->validate([
-            'pre_tax_costs' => 'required|array',
-            'post_tax_costs' => 'required|array',
+            'pre_tax_costs' => 'nullable|array',
+            'pre_tax_amounts' => 'nullable|array',
+            'post_tax_costs' => 'nullable|array',
         ]);
 
-        SystemSetting::set('default_additional_costs_pre_tax', $request->pre_tax_costs, 'array');
-        SystemSetting::set('default_additional_costs_post_tax', $request->post_tax_costs, 'array');
+        $preTaxCosts = [];
+        if ($request->has('pre_tax_costs') && $request->has('pre_tax_amounts')) {
+            foreach ($request->pre_tax_costs as $key => $name) {
+                if (!empty($name) && isset($request->pre_tax_amounts[$key])) {
+                    $preTaxCosts[$name] = (float) $request->pre_tax_amounts[$key];
+                }
+            }
+        }
+
+        $postTaxCosts = [];
+        if ($request->has('post_tax_costs')) {
+            foreach ($request->post_tax_costs as $key => $costData) {
+                if (is_array($costData) && !empty($costData['name']) && isset($costData['amount'])) {
+                    $postTaxCosts[$costData['name']] = [
+                        'amount' => (float) $costData['amount'],
+                        'iva_applies' => isset($costData['iva_applies']) && $costData['iva_applies']
+                    ];
+                }
+            }
+        }
+
+        SystemSetting::set('default_additional_costs_pre_tax', $preTaxCosts, 'array');
+        SystemSetting::set('default_additional_costs_post_tax', $postTaxCosts, 'array');
 
         return redirect()->back()->with('success', 'Configuración de gastos locales actualizada.');
     }
