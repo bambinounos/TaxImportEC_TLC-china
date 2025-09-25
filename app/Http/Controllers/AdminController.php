@@ -255,8 +255,8 @@ class AdminController extends Controller
             'post_tax_costs' => 'required|array',
         ]);
 
-        SystemSetting::set('default_additional_costs_pre_tax', $request->pre_tax_costs);
-        SystemSetting::set('default_additional_costs_post_tax', $request->post_tax_costs);
+        SystemSetting::set('default_additional_costs_pre_tax', $request->pre_tax_costs, 'array');
+        SystemSetting::set('default_additional_costs_post_tax', $request->post_tax_costs, 'array');
 
         return redirect()->back()->with('success', 'Configuración de gastos locales actualizada.');
     }
