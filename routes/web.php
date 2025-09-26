@@ -53,7 +53,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/mass-update-iva', [AdminController::class, 'massUpdateIvaRate'])->name('mass-update-iva');
 
         // User Management
-        Route::resource('users', UserController::class)->only(['index', 'show', 'destroy']);
+        Route::resource('users', UserController::class)
+            ->only(['index', 'show', 'destroy'])
+            ->where('user', '[0-9]+');
     });
 });
 
