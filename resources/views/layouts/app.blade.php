@@ -53,9 +53,18 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end">
+                                    @if (Auth::user()->isAdmin())
+                                        <a class="dropdown-item" href="{{ route('admin.index') }}">
+                                            <i class="fas fa-cog"></i> Panel de Administración
+                                        </a>
+                                        <a class="dropdown-item" href="{{ route('admin.users.index') }}">
+                                            <i class="fas fa-users-cog"></i> Gestión de Usuarios
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                    @endif
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        Cerrar Sesión
+                                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">

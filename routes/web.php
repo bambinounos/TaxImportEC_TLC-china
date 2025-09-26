@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CalculationController;
 use App\Http\Controllers\CalculationItemController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -50,6 +51,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/local-expenses-config', [AdminController::class, 'localExpensesConfig'])->name('local-expenses-config');
         Route::post('/local-expenses-config', [AdminController::class, 'updateLocalExpensesConfig'])->name('local-expenses-config.update');
         Route::post('/mass-update-iva', [AdminController::class, 'massUpdateIvaRate'])->name('mass-update-iva');
+
+        // User Management
+        Route::resource('users', UserController::class)->only(['index', 'show', 'destroy']);
     });
 });
 
