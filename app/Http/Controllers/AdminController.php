@@ -291,9 +291,9 @@ class AdminController extends Controller
 
         $favicon = $request->file('favicon');
         $filename = 'favicon.' . $favicon->getClientOriginalExtension();
-        $favicon->move(public_path(), $filename);
+        $favicon->move(public_path('img'), $filename);
 
-        SystemSetting::set('favicon_path', $filename);
+        SystemSetting::set('favicon_path', 'img/' . $filename);
 
         return redirect()->back()->with('success', 'Favicon actualizado exitosamente.');
     }
