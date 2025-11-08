@@ -7,6 +7,13 @@
 
     <title>{{ config('app.name', 'TaxImportEC') }}</title>
 
+    @php
+        $faviconPath = \App\Models\SystemSetting::get('favicon_path');
+    @endphp
+    @if ($faviconPath)
+        <link rel="icon" href="{{ asset($faviconPath) }}">
+    @endif
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
