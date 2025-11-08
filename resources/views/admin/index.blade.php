@@ -9,6 +9,8 @@
         </div>
     </div>
 
+    @include('partials.alerts')
+
     <div class="row">
         <div class="col-md-3">
             <div class="card bg-primary text-white">
