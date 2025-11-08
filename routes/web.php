@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/calculations/{calculation}/items', [CalculationItemController::class, 'store'])->name('calculations.items.store');
 
     Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/clear-cache', [AdminController::class, 'clearCache'])->name('clear-cache');
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::get('/tariff-codes', [AdminController::class, 'tariffCodes'])->name('tariff-codes');
         Route::get('/tariff-codes/create', [AdminController::class, 'createTariffCode'])->name('tariff-codes.create');

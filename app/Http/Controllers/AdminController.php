@@ -6,6 +6,7 @@ use App\Models\SystemSetting;
 use App\Models\TariffCode;
 use App\Models\TlcSchedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -299,6 +300,18 @@ class AdminController extends Controller
             return redirect()->back()->with('success', 'Favicon actualizado exitosamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'No se pudo subir el favicon: ' . $e->getMessage());
+        }
+    }
+
+    public function clearCache()
+    {
+        try {
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            return redirect()->back()->with('success', 'Caché de la aplicación borrada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'No se pudo borrar la caché: ' . $e->getMessage());
         }
     }
 }
