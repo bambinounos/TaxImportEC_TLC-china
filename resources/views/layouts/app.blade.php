@@ -12,6 +12,8 @@
     @endphp
     @if ($faviconPath)
         <link rel="icon" href="{{ asset($faviconPath) }}">
+    @else
+        <link rel="icon" href="{{ asset('img/favicon.svg') }}">
     @endif
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
