@@ -163,5 +163,27 @@
             </div>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-image"></i> Actualizar Favicon</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.favicon.update') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="favicon" class="form-label">Seleccionar Favicon (.ico, .png, .jpg)</label>
+                            <input class="form-control" type="file" id="favicon" name="favicon" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Subir Favicon
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
