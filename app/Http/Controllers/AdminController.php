@@ -287,7 +287,7 @@ class AdminController extends Controller
     public function updateFavicon(Request $request)
     {
         $request->validate([
-            'favicon' => 'required|image|mimes:ico,png,jpg,jpeg|max:2048',
+            'favicon' => 'required|mimetypes:image/x-icon,image/vnd.microsoft.icon,image/png,image/jpeg|max:2048',
         ]);
 
         try {
@@ -296,6 +296,8 @@ class AdminController extends Controller
             $favicon->move(public_path('img'), $filename);
 
             SystemSetting::set('favicon_path', 'img/' . $filename);
+
+            Artisan::call('view:clear');
 
             return redirect()->back()->with('success', 'Favicon actualizado exitosamente.');
         } catch (\Exception $e) {
