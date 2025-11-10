@@ -288,10 +288,11 @@ class AdminController extends Controller
     {
         $request->validate(
             [
-                'favicon' => 'required|mimes:ico,png,jpg,jpeg|max:2048',
+                'favicon' => 'required|file|max:2048|mimes:ico,png,jpg,jpeg|mimetypes:image/x-icon,image/vnd.microsoft.icon,image/png,image/jpeg',
             ],
             [
                 'favicon.mimes' => 'CUSTOM ERROR: The file must be a valid ICO, PNG, or JPG.',
+                'favicon.mimetypes' => 'CUSTOM ERROR: The file must be a valid ICO, PNG, or JPG.',
                 'favicon.required' => 'CUSTOM ERROR: A file is required.',
             ]
         );
@@ -302,6 +303,10 @@ class AdminController extends Controller
             $favicon->move(public_path('img'), $filename);
 
             SystemSetting::set('favicon_path', 'img/' . $filename);
+
+            if (strtolower($favicon->getClientOriginalExtension()) === 'ico') {
+                @copy(public_path('img/' . $filename), public_path('favicon.ico'));
+            }
 
             Artisan::call('view:clear');
             Artisan::call('config:clear');

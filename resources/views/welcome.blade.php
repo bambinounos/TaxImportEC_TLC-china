@@ -4,6 +4,25 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>TaxImportEC TLC China</title>
+
+        @php
+            $faviconPath = \App\Models\SystemSetting::get('favicon_path') ?: 'img/favicon.svg';
+            $abs = public_path($faviconPath);
+            $ver = file_exists($abs) ? filemtime($abs) : null;
+            $ext = strtolower(pathinfo($faviconPath, PATHINFO_EXTENSION));
+            $type = match ($ext) {
+                'ico' => 'image/x-icon',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'svg' => 'image/svg+xml',
+                default => null,
+            };
+            $href = asset($faviconPath).($ver ? ('?v='.$ver) : '');
+        @endphp
+
+        <link rel="icon" href="{{ $href }}" @if($type) type="{{ $type }}" @endif>
+        <link rel="shortcut icon" href="{{ $href }}" @if($type) type="{{ $type }}" @endif>
+
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body class="bg-light">
