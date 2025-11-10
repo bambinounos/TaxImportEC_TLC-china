@@ -319,7 +319,10 @@ class AdminController extends Controller
             Artisan::call('config:clear');
             Artisan::call('route:clear');
             Artisan::call('view:clear');
-            return redirect()->back()->with('success', 'Caché de la aplicación borrada exitosamente.');
+            Artisan::call('cache:clear');
+            Artisan::call('event:clear');
+            Artisan::call('optimize:clear');
+            return redirect()->back()->with('success', 'Todos los cachés de la aplicación (config, route, view, app, event, compiled) han sido borrados exitosamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'No se pudo borrar la caché: ' . $e->getMessage());
         }
