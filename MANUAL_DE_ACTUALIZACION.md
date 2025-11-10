@@ -67,7 +67,19 @@ npm run build
 
 ### 6. Limpiar y Cachear la Configuración
 
-Después de actualizar el código y las dependencias, es fundamental limpiar las cachés antiguas y volver a generarlas. Esto asegura que Laravel utilice la nueva configuración y las nuevas rutas.
+Después de actualizar el código y las dependencias, es fundamental limpiar todas las cachés antiguas. Esto asegura que Laravel utilice la nueva configuración y las nuevas rutas.
+
+**Importante:** Primero limpie todas las cachés con los comandos `clear`:
+
+```bash
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
+php artisan optimize:clear
+```
+
+Luego, opcionalmente puede regenerar las cachés para optimizar el rendimiento en producción:
 
 ```bash
 php artisan config:cache
