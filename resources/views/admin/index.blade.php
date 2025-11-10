@@ -183,7 +183,7 @@
                         @csrf
                         <div class="mb-3">
                             <label for="favicon" class="form-label">Seleccionar Favicon (.ico, .png, .jpg)</label>
-                            <input class="form-control" type="file" id="favicon" name="favicon" required>
+                            <input class="form-control" type="file" id="favicon" name="favicon" accept=".ico,.png,.jpg,.jpeg" required>
                         </div>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-upload"></i> Subir Favicon

@@ -8,13 +8,22 @@
     <title>{{ config('app.name', 'TaxImportEC') }}</title>
 
     @php
-        $faviconPath = \App\Models\SystemSetting::get('favicon_path');
+        $faviconPath = \App\Models\SystemSetting::get('favicon_path') ?: 'img/favicon.svg';
+        $abs = public_path($faviconPath);
+        $ver = file_exists($abs) ? filemtime($abs) : null;
+        $ext = strtolower(pathinfo($faviconPath, PATHINFO_EXTENSION));
+        $type = match ($ext) {
+            'ico' => 'image/x-icon',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'svg' => 'image/svg+xml',
+            default => null,
+        };
+        $href = asset($faviconPath).($ver ? ('?v='.$ver) : '');
     @endphp
-    @if ($faviconPath)
-        <link rel="icon" href="{{ asset($faviconPath) }}">
-    @else
-        <link rel="icon" href="{{ asset('img/favicon.svg') }}">
-    @endif
+
+    <link rel="icon" href="{{ $href }}" @if($type) type="{{ $type }}" @endif>
+    <link rel="shortcut icon" href="{{ $href }}" @if($type) type="{{ $type }}" @endif>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
