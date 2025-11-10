@@ -286,9 +286,15 @@ class AdminController extends Controller
 
     public function updateFavicon(Request $request)
     {
-        $request->validate([
-            'favicon' => 'required|mimes:ico,png,jpg,jpeg|max:2048',
-        ]);
+        $request->validate(
+            [
+                'favicon' => 'required|mimes:ico,png,jpg,jpeg|max:2048',
+            ],
+            [
+                'favicon.mimes' => 'CUSTOM ERROR: The file must be a valid ICO, PNG, or JPG.',
+                'favicon.required' => 'CUSTOM ERROR: A file is required.',
+            ]
+        );
 
         try {
             $favicon = $request->file('favicon');
