@@ -62,7 +62,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Exención ICE</label>
                                     <div class="form-check">
@@ -71,10 +71,26 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Razón de Exención ICE</label>
                                     <input type="text" class="form-control" name="ice_exempt_reason" value="{{ old('ice_exempt_reason', $calculationItem->ice_exempt_reason) }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Margen de Ganancia Individual</label>
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" class="form-check-input" name="use_custom_profit" id="use_custom_profit" value="1"
+                                            {{ old('use_custom_profit', $calculationItem->profit_margin_percent !== null ? '1' : '') ? 'checked' : '' }}
+                                            onchange="document.getElementById('custom_profit_input').disabled = !this.checked">
+                                        <label class="form-check-label" for="use_custom_profit">Usar margen individual</label>
+                                    </div>
+                                    <input type="number" step="0.01" min="0" max="1000" class="form-control" name="profit_margin_percent" id="custom_profit_input"
+                                        value="{{ old('profit_margin_percent', $calculationItem->profit_margin_percent) }}"
+                                        placeholder="Margen global: {{ number_format($calculationItem->calculation->profit_margin_percent, 2) }}%"
+                                        {{ $calculationItem->profit_margin_percent === null ? 'disabled' : '' }}>
+                                    <div class="form-text">Si no se marca, se usará el margen global del cálculo.</div>
                                 </div>
                             </div>
                         </div>

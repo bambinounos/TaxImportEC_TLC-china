@@ -51,6 +51,39 @@ class Calculation extends Model
         return $this->hasMany(CalculationItem::class);
     }
 
+    public function shares()
+    {
+        return $this->hasMany(CalculationShare::class);
+    }
+
+    public function sharedWithUsers()
+    {
+        return $this->belongsToMany(User::class, 'calculation_shares', 'calculation_id', 'shared_with_user_id')
+                     ->withPivot('permission', 'shared_by_user_id')
+                     ->withTimestamps();
+    }
+
+    public function auditLogs()
+    {
+        return $this->hasMany(CalculationAuditLog::class)->orderBy('created_at', 'desc');
+    }
+
+    public function isOwnedBy(User $user): bool
+    {
+        return $this->user_id === $user->id;
+    }
+
+    public function isSharedWith(User $user): bool
+    {
+        return $this->shares()->where('shared_with_user_id', $user->id)->exists();
+    }
+
+    public function getSharePermission(User $user): ?string
+    {
+        $share = $this->shares()->where('shared_with_user_id', $user->id)->first();
+        return $share?->permission;
+    }
+
     public function getTotalAdditionalCostsPreTax(): float
     {
         if (!$this->additional_costs_pre_tax) {

@@ -42,6 +42,7 @@ class CsvExportService
             'Costo Unitario',
             'Precio de Venta',
             'Precio Unit. Venta',
+            'Margen Ganancia Individual (%)',
         ];
 
         $filename = storage_path('app/exports/calculation_' . $calculation->id . '_' . date('Y-m-d_H-i-s') . '.csv');
@@ -84,6 +85,7 @@ class CsvExportService
                 number_format($item->unit_cost, 4),
                 number_format($item->sale_price, 2),
                 number_format($item->unit_sale_price, 4),
+                $item->profit_margin_percent !== null ? number_format($item->profit_margin_percent, 4) : '',
             ];
             
             fputcsv($file, $row);
@@ -130,6 +132,7 @@ class CsvExportService
             'X1' => 'Costo Unitario',
             'Y1' => 'Precio de Venta',
             'Z1' => 'Precio Unit. Venta',
+            'AA1' => 'Margen Ganancia Individual (%)',
         ];
 
         foreach ($headers as $cell => $header) {
@@ -143,7 +146,7 @@ class CsvExportService
                 'startColor' => ['rgb' => 'E0E0E0']
             ]
         ];
-        $sheet->getStyle('A1:Z1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:AA1')->applyFromArray($headerStyle);
 
         $row = 2;
         foreach ($calculation->items as $item) {
@@ -173,11 +176,13 @@ class CsvExportService
             $sheet->setCellValue("X{$row}", $item->unit_cost);
             $sheet->setCellValue("Y{$row}", $item->sale_price);
             $sheet->setCellValue("Z{$row}", $item->unit_sale_price);
-            
+            $sheet->setCellValue("AA{$row}", $item->profit_margin_percent);
+
             $row++;
         }
 
-        foreach (range('A', 'Z') as $column) {
+        $columns = array_merge(range('A', 'Z'), ['AA']);
+        foreach ($columns as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 

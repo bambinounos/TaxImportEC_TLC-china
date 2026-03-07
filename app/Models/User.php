@@ -35,8 +35,25 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isTariffViewer(): bool
+    {
+        return $this->role === 'tariff_viewer';
+    }
+
+    public function canViewTariffs(): bool
+    {
+        return $this->isAdmin() || $this->isTariffViewer();
+    }
+
     public function calculations()
     {
         return $this->hasMany(Calculation::class)->orderBy('created_at', 'desc');
+    }
+
+    public function sharedCalculations()
+    {
+        return $this->belongsToMany(Calculation::class, 'calculation_shares', 'shared_with_user_id', 'calculation_id')
+                     ->withPivot('permission', 'shared_by_user_id')
+                     ->withTimestamps();
     }
 }

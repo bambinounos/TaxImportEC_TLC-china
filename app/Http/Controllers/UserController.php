@@ -9,9 +9,6 @@ use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
-    /**
-     * Middleware to ensure only admins can access user management.
-     */
     public function __construct()
     {
         $this->middleware('auth');
@@ -23,9 +20,6 @@ class UserController extends Controller
         });
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request): View
     {
         $query = User::query();
@@ -51,9 +45,6 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(User $user): View
     {
         $user->load(['calculations' => function ($query) {
@@ -63,12 +54,34 @@ class UserController extends Controller
         return view('admin.users.show', compact('user'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function edit(User $user): View
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $request->validate([
+            'role' => 'required|in:admin,user,tariff_viewer',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($user->id === auth()->id() && $request->role !== 'admin') {
+            return redirect()->route('admin.users.show', $user)
+                ->with('error', 'No puedes cambiar tu propio rol de administrador.');
+        }
+
+        $user->update([
+            'role' => $request->role,
+            'is_active' => $request->boolean('is_active', true),
+        ]);
+
+        return redirect()->route('admin.users.show', $user)
+            ->with('success', 'Usuario actualizado exitosamente.');
+    }
+
     public function destroy(User $user): RedirectResponse
     {
-        // Prevent admin from deleting themselves
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'No puedes eliminar tu propia cuenta de administrador.');

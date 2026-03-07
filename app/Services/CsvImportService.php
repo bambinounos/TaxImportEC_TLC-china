@@ -24,6 +24,7 @@ class CsvImportService
         'hs_code',
         'ice_exempt',
         'ice_exempt_reason',
+        'profit_margin_percent',
     ];
 
     public function importFromCsv(UploadedFile $file, Calculation $calculation): array
@@ -166,6 +167,11 @@ class CsvImportService
 
         $totalFobValue = $quantity * $unitPriceFob;
 
+        $profitMargin = null;
+        if (!empty($data['profit_margin_percent']) && is_numeric($data['profit_margin_percent'])) {
+            $profitMargin = (float) $data['profit_margin_percent'];
+        }
+
         $itemData = [
             'part_number' => $data['part_number'],
             'description_en' => $data['description_en'],
@@ -191,6 +197,7 @@ class CsvImportService
             'unit_cost' => $unitPriceFob,
             'sale_price' => $totalFobValue,
             'unit_sale_price' => $unitPriceFob,
+            'profit_margin_percent' => $profitMargin,
         ];
 
         if ($itemData['ice_exempt'] && empty($itemData['ice_exempt_reason'])) {

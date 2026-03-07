@@ -32,6 +32,8 @@
                                 <td>
                                     @if ($user->isAdmin())
                                         <span class="badge badge-success">Administrador</span>
+                                    @elseif ($user->isTariffViewer())
+                                        <span class="badge badge-info">Visor de Partidas</span>
                                     @else
                                         <span class="badge badge-secondary">Usuario</span>
                                     @endif
@@ -59,6 +61,9 @@
                     </table>
                 </div>
                 <div class="card-footer text-right">
+                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar Usuario
+                    </a>
                     @if (auth()->id() !== $user->id)
                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.');">
                             @csrf

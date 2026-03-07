@@ -48,6 +48,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('calculations.index') }}">Cálculos</a>
                             </li>
+                            @if(Auth::user()->canViewTariffs())
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('tariff-codes.index') }}">Partidas</a>
+                            </li>
+                            @endif
                         @endauth
                     </ul>
 

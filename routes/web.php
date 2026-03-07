@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CalculationController;
 use App\Http\Controllers\CalculationItemController;
+use App\Http\Controllers\TariffCodeViewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,10 +34,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/calculations/{calculation}/export-excel', [CalculationController::class, 'exportExcel'])
         ->name('calculations.export-excel');
 
+    // Sharing routes
+    Route::post('/calculations/{calculation}/share', [CalculationController::class, 'share'])
+        ->name('calculations.share');
+    Route::delete('/calculations/{calculation}/share/{user}', [CalculationController::class, 'revokeShare'])
+        ->name('calculations.revoke-share');
+
     Route::resource('calculation-items', CalculationItemController::class)->only([
         'edit', 'update', 'destroy'
     ]);
     Route::post('/calculations/{calculation}/items', [CalculationItemController::class, 'store'])->name('calculations.items.store');
+
+    // Tariff codes viewer (for tariff_viewer and admin roles)
+    Route::get('/tariff-codes', [TariffCodeViewController::class, 'index'])->name('tariff-codes.index');
+    Route::get('/tariff-codes/{hsCode}', [TariffCodeViewController::class, 'show'])->name('tariff-codes.show');
 
     Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/clear-cache', [AdminController::class, 'clearCache'])->name('clear-cache');
@@ -55,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
 
         // User Management
         Route::resource('users', UserController::class)
-            ->only(['index', 'show', 'destroy'])
+            ->only(['index', 'show', 'edit', 'update', 'destroy'])
             ->where(['user' => '[0-9]+']);
 
         Route::post('/favicon', [AdminController::class, 'updateFavicon'])->name('favicon.update');

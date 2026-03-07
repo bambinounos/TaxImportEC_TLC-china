@@ -36,6 +36,9 @@
                                             <a href="{{ route('calculations.show', $calculation) }}" class="text-decoration-none">
                                                 {{ $calculation->name }}
                                             </a>
+                                            @if($calculation->shares->count() > 0)
+                                                <br><small class="text-info"><i class="fas fa-share-alt"></i> Compartido ({{ $calculation->shares->count() }})</small>
+                                            @endif
                                         </td>
                                         <td>{{ Str::limit($calculation->description, 50) }}</td>
                                         <td>
@@ -52,9 +55,9 @@
                                         <td>{{ $calculation->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="{{ route('calculations.show', $calculation) }}" 
+                                                <a href="{{ route('calculations.show', $calculation) }}"
                                                    class="btn btn-sm btn-outline-primary">Ver</a>
-                                                <form method="POST" action="{{ route('calculations.destroy', $calculation) }}" 
+                                                <form method="POST" action="{{ route('calculations.destroy', $calculation) }}"
                                                       class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar este cálculo?')">
                                                     @csrf
                                                     @method('DELETE')
@@ -80,6 +83,67 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Shared Calculations Section --}}
+            @if($sharedCalculations->count() > 0)
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4><i class="fas fa-share-alt"></i> Compartidos Conmigo</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Propietario</th>
+                                    <th>Permiso</th>
+                                    <th>TLC China</th>
+                                    <th>Año</th>
+                                    <th>Total FOB</th>
+                                    <th>Compartido el</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($sharedCalculations as $calculation)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('calculations.show', $calculation) }}" class="text-decoration-none">
+                                            {{ $calculation->name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $calculation->user->name ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($calculation->pivot->permission === 'edit')
+                                            <span class="badge bg-success">Editar</span>
+                                        @else
+                                            <span class="badge bg-info">Solo ver</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($calculation->use_tlc_china)
+                                            <span class="badge bg-success">Sí</span>
+                                        @else
+                                            <span class="badge bg-secondary">No</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $calculation->calculation_year }}</td>
+                                    <td>${{ number_format($calculation->total_fob_value, 2) }}</td>
+                                    <td>{{ $calculation->pivot->created_at ? \Carbon\Carbon::parse($calculation->pivot->created_at)->format('d/m/Y H:i') : 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ route('calculations.show', $calculation) }}"
+                                           class="btn btn-sm btn-outline-primary">Ver</a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    {{ $sharedCalculations->links() }}
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

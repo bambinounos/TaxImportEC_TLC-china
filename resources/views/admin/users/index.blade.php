@@ -22,6 +22,7 @@
                         <option value="">Todos los roles</option>
                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Administrador</option>
                         <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>Usuario</option>
+                        <option value="tariff_viewer" {{ request('role') == 'tariff_viewer' ? 'selected' : '' }}>Visor de Partidas</option>
                     </select>
                 </div>
                 <div class="form-group mr-2 mb-2">
@@ -64,6 +65,8 @@
                             <td>
                                 @if ($user->isAdmin())
                                     <span class="badge badge-success">Admin</span>
+                                @elseif ($user->isTariffViewer())
+                                    <span class="badge badge-info">Visor Partidas</span>
                                 @else
                                     <span class="badge badge-secondary">Usuario</span>
                                 @endif
@@ -79,6 +82,9 @@
                             <td class="text-right">
                                 <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-info" title="Ver detalles">
                                     <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
                                 </a>
                                 @if (auth()->id() !== $user->id)
                                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.');">

@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Calculation;
 use App\Models\CalculationItem;
+use App\Models\CalculationShare;
+use App\Models\User;
 use App\Services\TaxCalculationService;
 use App\Services\CsvImportService;
 use App\Services\CsvExportService;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +36,12 @@ class CalculationController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('calculations.index', compact('calculations'));
+        $sharedCalculations = Auth::user()->sharedCalculations()
+            ->with('user')
+            ->orderBy('calculation_shares.created_at', 'desc')
+            ->paginate(10, ['*'], 'shared_page');
+
+        return view('calculations.index', compact('calculations', 'sharedCalculations'));
     }
 
     public function create()
@@ -178,6 +186,8 @@ class CalculationController extends Controller
             'profit_margin_percent' => $request->profit_margin_percent,
         ]);
 
+        AuditService::log($calculation, 'created', 'Cálculo creado');
+
         return redirect()->route('calculations.show', $calculation)
             ->with('success', 'Cálculo creado exitosamente.');
     }
@@ -185,10 +195,16 @@ class CalculationController extends Controller
     public function show(Calculation $calculation)
     {
         $this->authorize('view', $calculation);
-        
-        $calculation->load('items.tariffCode');
-        
-        return view('calculations.show', compact('calculation'));
+
+        $calculation->load(['items.tariffCode', 'shares.sharedWithUser', 'auditLogs.user']);
+
+        $availableUsers = User::where('id', '!=', Auth::id())
+            ->where('is_active', true)
+            ->whereNotIn('id', $calculation->shares->pluck('shared_with_user_id'))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
+        return view('calculations.show', compact('calculation', 'availableUsers'));
     }
 
     public function importCsv(Request $request, Calculation $calculation)
@@ -431,11 +447,18 @@ class CalculationController extends Controller
             'new_profit_margin' => $request->profit_margin_percent
         ]);
 
+        $oldMargin = $calculation->profit_margin_percent;
+
         $calculation->update([
             'profit_margin_percent' => $request->profit_margin_percent,
         ]);
 
         $calculation = $calculation->fresh();
+
+        AuditService::log($calculation, 'profit_margin_updated', 'Margen de ganancia global actualizado', [
+            'old_margin' => $oldMargin,
+            'new_margin' => $request->profit_margin_percent,
+        ]);
 
         \Log::info('Profit Margin Update: After database update', [
             'updated_profit_margin' => $calculation->profit_margin_percent,
@@ -458,5 +481,59 @@ class CalculationController extends Controller
 
         return redirect()->route('calculations.index')
             ->with('success', 'Cálculo eliminado exitosamente.');
+    }
+
+    public function share(Request $request, Calculation $calculation)
+    {
+        $this->authorize('share', $calculation);
+
+        $request->validate([
+            'shared_with_user_id' => 'required|exists:users,id',
+            'permission' => 'required|in:view,edit',
+        ]);
+
+        if ($request->shared_with_user_id == $calculation->user_id) {
+            return back()->with('error', 'No puedes compartir un cálculo con su propietario.');
+        }
+
+        $existing = CalculationShare::where('calculation_id', $calculation->id)
+            ->where('shared_with_user_id', $request->shared_with_user_id)
+            ->first();
+
+        if ($existing) {
+            $existing->update(['permission' => $request->permission]);
+            $action = 'Permisos actualizados';
+        } else {
+            CalculationShare::create([
+                'calculation_id' => $calculation->id,
+                'shared_with_user_id' => $request->shared_with_user_id,
+                'shared_by_user_id' => Auth::id(),
+                'permission' => $request->permission,
+            ]);
+            $action = 'Cálculo compartido';
+        }
+
+        $sharedUser = User::find($request->shared_with_user_id);
+        AuditService::log($calculation, 'shared', "{$action} con {$sharedUser->name} ({$request->permission})", [
+            'shared_with' => $sharedUser->name,
+            'permission' => $request->permission,
+        ]);
+
+        return back()->with('success', "{$action} con {$sharedUser->name} exitosamente.");
+    }
+
+    public function revokeShare(Calculation $calculation, User $user)
+    {
+        $this->authorize('share', $calculation);
+
+        CalculationShare::where('calculation_id', $calculation->id)
+            ->where('shared_with_user_id', $user->id)
+            ->delete();
+
+        AuditService::log($calculation, 'share_revoked', "Acceso revocado para {$user->name}", [
+            'revoked_user' => $user->name,
+        ]);
+
+        return back()->with('success', "Acceso revocado para {$user->name}.");
     }
 }

@@ -39,6 +39,7 @@ class CalculationItem extends Model
         'unit_cost',
         'sale_price',
         'unit_sale_price',
+        'profit_margin_percent',
     ];
 
     protected $casts = [
@@ -64,6 +65,7 @@ class CalculationItem extends Model
         'unit_cost' => 'decimal:4',
         'sale_price' => 'decimal:2',
         'unit_sale_price' => 'decimal:4',
+        'profit_margin_percent' => 'decimal:4',
     ];
 
     public function calculation()

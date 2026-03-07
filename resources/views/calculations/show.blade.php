@@ -11,6 +11,9 @@
                         <small class="text-muted">
                             Creado el {{ $calculation->created_at->format('d/m/Y H:i') }} por {{ optional($calculation->user)->name ?? 'Usuario no encontrado' }}
                         </small>
+                        @if(!$calculation->isOwnedBy(auth()->user()) && $calculation->isSharedWith(auth()->user()))
+                            <br><small class="text-info"><i class="fas fa-share-alt"></i> Compartido contigo ({{ $calculation->getSharePermission(auth()->user()) === 'edit' ? 'Editar' : 'Solo ver' }})</small>
+                        @endif
                     </div>
                     <div class="btn-group">
                         <a href="{{ route('calculations.index') }}" class="btn btn-secondary">
@@ -27,6 +30,11 @@
                                 <i class="fas fa-file-excel"></i> Exportar Excel
                             </a></li>
                         </ul>
+                        @can('share', $calculation)
+                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#shareModal">
+                            <i class="fas fa-share-alt"></i> Compartir
+                        </button>
+                        @endcan
                     </div>
                 </div>
 
@@ -80,8 +88,9 @@
                         <div class="text-center py-5">
                             <h5>No hay productos importados</h5>
                             <p class="text-muted">Importe un archivo CSV para comenzar con los cálculos.</p>
-                            
-                            <form method="POST" action="{{ route('calculations.import-csv', $calculation) }}" 
+
+                            @can('update', $calculation)
+                            <form method="POST" action="{{ route('calculations.import-csv', $calculation) }}"
                                   enctype="multipart/form-data" class="d-inline-block">
                                 @csrf
                                 <div class="mb-3">
@@ -91,10 +100,12 @@
                                     <i class="fas fa-upload"></i> Importar CSV
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     @else
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Productos Importados</h5>
+                            @can('update', $calculation)
                             <div class="btn-group">
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
                                     <i class="fas fa-sync-alt"></i> Sincronizar CSV
@@ -109,6 +120,7 @@
                                     </button>
                                 </form>
                             </div>
+                            @endcan
                         </div>
 
                         <div class="table-responsive">
@@ -126,8 +138,11 @@
                                         <th>ICE</th>
                                         <th>IVA</th>
                                         <th>Total</th>
+                                        <th>Ganancia</th>
                                         <th>Precio Venta</th>
+                                        @can('update', $calculation)
                                         <th>Acciones</th>
+                                        @endcan
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -162,7 +177,15 @@
                                         </td>
                                         <td>${{ number_format($item->iva_amount, 2) }}</td>
                                         <td><strong>${{ number_format($item->total_cost, 2) }}</strong></td>
+                                        <td>
+                                            @if($item->profit_margin_percent !== null)
+                                                <span class="badge bg-warning text-dark" title="Margen individual">{{ number_format($item->profit_margin_percent, 2) }}%</span>
+                                            @else
+                                                <span class="badge bg-secondary" title="Margen global">{{ number_format($calculation->profit_margin_percent, 2) }}%</span>
+                                            @endif
+                                        </td>
                                         <td><strong>${{ number_format($item->sale_price, 2) }}</strong></td>
+                                        @can('update', $calculation)
                                         <td>
                                             <div class="btn-group">
                                                 <a href="{{ route('calculation-items.edit', $item) }}" class="btn btn-outline-primary btn-sm">
@@ -177,6 +200,7 @@
                                                 </form>
                                             </div>
                                         </td>
+                                        @endcan
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -189,7 +213,9 @@
                                         <th>${{ number_format($calculation->items->sum('ice_amount'), 2) }}</th>
                                         <th>${{ number_format($calculation->items->sum('iva_amount'), 2) }}</th>
                                         <th><strong>${{ number_format($calculation->items->sum('total_cost'), 2) }}</strong></th>
+                                        <th></th>
                                         <th><strong>${{ number_format($calculation->items->sum('sale_price'), 2) }}</strong></th>
+                                        @can('update', $calculation)<th></th>@endcan
                                     </tr>
                                 </tfoot>
                             </table>
@@ -262,6 +288,7 @@
     </div>
 </div>
 
+@can('update', $calculation)
 <!-- Import Modal -->
 <div class="modal fade" id="importModal" tabindex="-1">
     <div class="modal-dialog">
@@ -282,7 +309,7 @@
                         <div class="form-text">
                             Columnas requeridas: <strong>part_number, description_en, quantity, unit_price_fob</strong>.
                             <br>
-                            Columnas opcionales: description_es, unit_weight, hs_code, ice_exempt, ice_exempt_reason.
+                            Columnas opcionales: description_es, unit_weight, hs_code, ice_exempt, ice_exempt_reason, profit_margin_percent.
                         </div>
                     </div>
                 </div>
@@ -337,22 +364,29 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="mb-3">
                                 <label class="form-label">Cantidad</label>
                                 <input type="number" step="1" min="1" class="form-control" name="quantity" value="{{ old('quantity') }}" required>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="mb-3">
                                 <label class="form-label">Precio Unitario FOB (USD)</label>
                                 <input type="number" step="0.01" min="0.01" class="form-control" name="unit_price_fob" value="{{ old('unit_price_fob') }}" required>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="mb-3">
                                 <label class="form-label">Peso Unitario (Kg)</label>
                                 <input type="number" step="0.01" min="0" class="form-control" name="unit_weight" value="{{ old('unit_weight') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Ganancia Individual (%)</label>
+                                <input type="number" step="0.01" min="0" max="1000" class="form-control" name="profit_margin_percent" value="{{ old('profit_margin_percent') }}" placeholder="Usar global">
+                                <div class="form-text">Dejar vacío para usar el margen global ({{ number_format($calculation->profit_margin_percent, 2) }}%)</div>
                             </div>
                         </div>
                     </div>
@@ -384,26 +418,45 @@
         </div>
     </div>
 </div>
+@endcan
+
         <!-- Profit Margin Configuration Section -->
         <div class="card mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5>Configuración de Margen de Ganancia</h5>
+                @can('update', $calculation)
                 <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#profitMarginModal">
-                    <i class="fas fa-percentage"></i> Editar Margen
+                    <i class="fas fa-percentage"></i> Editar Margen Global
                 </button>
+                @endcan
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span><strong>Margen de Ganancia Actual:</strong></span>
+                            <span><strong>Margen de Ganancia Global:</strong></span>
                             <span class="badge bg-success fs-6">{{ number_format($calculation->profit_margin_percent, 2) }}%</span>
                         </div>
+                        @php
+                            $itemsWithCustomMargin = $calculation->items->whereNotNull('profit_margin_percent');
+                        @endphp
+                        @if($itemsWithCustomMargin->count() > 0)
+                        <hr>
+                        <h6>Items con Margen Individual:</h6>
+                        <ul class="list-group list-group-flush">
+                            @foreach($itemsWithCustomMargin as $item)
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-1">
+                                <small>{{ $item->part_number }} - {{ Str::limit($item->description_en, 40) }}</small>
+                                <span class="badge bg-warning text-dark">{{ number_format($item->profit_margin_percent, 2) }}%</span>
+                            </li>
+                            @endforeach
+                        </ul>
+                        @endif
                         <hr>
                         <small class="text-muted">
-                            Este margen se aplica sobre el costo total de cada producto para calcular el precio de venta.
+                            El margen global se aplica a todos los productos que no tienen un margen individual configurado.
                             <br>
-                            <strong>Fórmula:</strong> Precio de Venta = Costo Total × (1 + Margen/100)
+                            <strong>Fórmula:</strong> Precio de Venta = Costo Total x (1 + Margen/100)
                         </small>
                     </div>
                 </div>
@@ -414,9 +467,11 @@
         <div class="card mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5>Configuración de Gastos Locales</h5>
+                @can('update', $calculation)
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#localExpensesModal">
                     <i class="fas fa-edit"></i> Editar Gastos
                 </button>
+                @endcan
             </div>
             <div class="card-body">
                 <div class="row">
@@ -449,8 +504,89 @@
                 </div>
             </div>
         </div>
+
+        {{-- Sharing Section --}}
+        @can('share', $calculation)
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-share-alt"></i> Compartir Cálculo</h5>
+            </div>
+            <div class="card-body">
+                @if($calculation->shares->count() > 0)
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Permiso</th>
+                            <th>Compartido el</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($calculation->shares as $share)
+                        <tr>
+                            <td>{{ $share->sharedWithUser->name }} <small class="text-muted">({{ $share->sharedWithUser->email }})</small></td>
+                            <td>
+                                @if($share->permission === 'edit')
+                                    <span class="badge bg-success">Editar</span>
+                                @else
+                                    <span class="badge bg-info">Solo ver</span>
+                                @endif
+                            </td>
+                            <td>{{ $share->created_at->format('d/m/Y H:i') }}</td>
+                            <td>
+                                <form action="{{ route('calculations.revoke-share', [$calculation, $share->sharedWithUser]) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Revocar acceso para {{ $share->sharedWithUser->name }}?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-times"></i> Revocar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <p class="text-muted">Este cálculo no está compartido con nadie.</p>
+                @endif
+            </div>
+        </div>
+        @endcan
+
+        {{-- Audit Log Section --}}
+        @if($calculation->auditLogs->count() > 0)
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> Historial de Cambios</h5>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($calculation->auditLogs->take(50) as $log)
+                        <tr>
+                            <td><small>{{ $log->created_at->format('d/m/Y H:i:s') }}</small></td>
+                            <td><small>{{ $log->user->name ?? 'N/A' }}</small></td>
+                            <td><span class="badge bg-secondary">{{ $log->action }}</span></td>
+                            <td><small>{{ $log->description }}</small></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
     </div>
 
+    @can('update', $calculation)
     <!-- Profit Margin Edit Modal -->
     <div class="modal fade" id="profitMarginModal" tabindex="-1">
         <div class="modal-dialog">
@@ -459,23 +595,23 @@
                     @csrf
                     @method('PUT')
                     <div class="modal-header">
-                        <h5 class="modal-title">Editar Margen de Ganancia</h5>
+                        <h5 class="modal-title">Editar Margen de Ganancia Global</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="profit_margin_percent" class="form-label">Margen de Ganancia (%)</label>
-                            <input type="number" step="0.01" min="0" max="1000" class="form-control" 
-                                   id="profit_margin_percent" name="profit_margin_percent" 
+                            <label for="profit_margin_percent" class="form-label">Margen de Ganancia Global (%)</label>
+                            <input type="number" step="0.01" min="0" max="1000" class="form-control"
+                                   id="profit_margin_percent" name="profit_margin_percent"
                                    value="{{ $calculation->profit_margin_percent }}" required>
                             <div class="form-text">
-                                Ingrese el porcentaje de ganancia que desea aplicar sobre el costo total de cada producto.
+                                Este margen se aplica a todos los productos que <strong>no</strong> tienen un margen individual.
                                 <br>
-                                <strong>Ejemplo:</strong> Si ingresa 25%, el precio de venta será el costo total × 1.25
+                                <strong>Ejemplo:</strong> Si ingresa 25%, el precio de venta será el costo total x 1.25
                             </div>
                         </div>
                         <div class="alert alert-info">
-                            <strong>Nota:</strong> Al cambiar el margen de ganancia, todos los precios de venta se recalcularán automáticamente.
+                            <strong>Nota:</strong> Al cambiar el margen global, se recalcularán los precios de venta de todos los productos (excepto los que tienen margen individual).
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -483,15 +619,6 @@
                         <button type="submit" class="btn btn-success">Actualizar y Recalcular</button>
                     </div>
                 </form>
-
-                <script>
-                document.getElementById('profitMarginForm').addEventListener('submit', function(e) {
-                    console.log('Profit margin form submission started');
-                    console.log('Form data:', new FormData(this));
-                    console.log('Form action:', this.action);
-                    console.log('Form method:', this.method);
-                });
-                </script>
             </div>
         </div>
     </div>
@@ -518,16 +645,54 @@
                         <button type="submit" class="btn btn-primary">Guardar y Recalcular</button>
                     </div>
                 </form>
-
-                <script>
-                document.getElementById('localExpensesForm').addEventListener('submit', function(e) {
-                    console.log('Form submission started');
-                    console.log('Form data:', new FormData(this));
-                    console.log('Form action:', this.action);
-                    console.log('Form method:', this.method);
-                });
-                </script>
             </div>
         </div>
     </div>
+    @endcan
+
+    {{-- Share Modal --}}
+    @can('share', $calculation)
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('calculations.share', $calculation) }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-share-alt"></i> Compartir Cálculo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="shared_with_user_id" class="form-label">Seleccionar Usuario</label>
+                            <select class="form-select" name="shared_with_user_id" id="shared_with_user_id" required>
+                                <option value="">-- Seleccionar --</option>
+                                @foreach($availableUsers as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="permission" class="form-label">Tipo de Permiso</label>
+                            <select class="form-select" name="permission" id="permission" required>
+                                <option value="view">Solo ver</option>
+                                <option value="edit">Ver y editar</option>
+                            </select>
+                            <div class="form-text">
+                                <strong>Solo ver:</strong> El usuario puede ver el cálculo y exportar, pero no puede modificarlo.
+                                <br>
+                                <strong>Ver y editar:</strong> El usuario puede modificar items, gastos y márgenes de ganancia.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-share-alt"></i> Compartir
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endcan
 @endsection

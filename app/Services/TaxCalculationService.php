@@ -61,7 +61,8 @@ class TaxCalculationService
         $item->total_cost = $item->cif_value + $item->total_taxes + $item->prorated_additional_post_tax;
         $item->unit_cost = $item->total_cost / $item->quantity;
         
-        $profitMargin = $calculation->profit_margin_percent / 100;
+        $marginPercent = $item->profit_margin_percent ?? $calculation->profit_margin_percent;
+        $profitMargin = $marginPercent / 100;
         $item->sale_price = $item->total_cost * (1 + $profitMargin);
         $item->unit_sale_price = $item->sale_price / $item->quantity;
         

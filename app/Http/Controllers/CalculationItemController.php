@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Calculation;
 use App\Models\CalculationItem;
 use App\Services\TaxCalculationService;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -31,6 +32,7 @@ class CalculationItemController extends Controller
             'unit_weight' => 'nullable|numeric|min:0',
             'ice_exempt' => 'nullable|boolean',
             'ice_exempt_reason' => 'nullable|string|max:255',
+            'profit_margin_percent' => 'nullable|numeric|min:0|max:1000',
         ]);
 
         DB::beginTransaction();
@@ -46,8 +48,16 @@ class CalculationItemController extends Controller
             $data['sale_price'] = $data['total_fob_value'];
             $data['unit_sale_price'] = $data['unit_price_fob'];
 
+            if ($request->filled('profit_margin_percent')) {
+                $data['profit_margin_percent'] = $request->profit_margin_percent;
+            } else {
+                $data['profit_margin_percent'] = null;
+            }
+
             $item = CalculationItem::create($data);
-            
+
+            AuditService::log($calculation, 'item_added', "Item agregado: {$item->part_number}");
+
             \Log::info('Manual item created successfully', [
                 'item_id' => $item->id,
                 'part_number' => $item->part_number,
@@ -95,9 +105,17 @@ class CalculationItemController extends Controller
             'unit_weight' => 'nullable|numeric|min:0',
             'ice_exempt' => 'nullable|boolean',
             'ice_exempt_reason' => 'nullable|string|max:255',
+            'profit_margin_percent' => 'nullable|numeric|min:0|max:1000',
         ]);
 
-        $calculationItem->update($request->all());
+        $data = $request->all();
+        if (!$request->filled('use_custom_profit')) {
+            $data['profit_margin_percent'] = null;
+        }
+
+        $calculationItem->update($data);
+
+        AuditService::log($calculationItem->calculation, 'item_updated', "Item actualizado: {$calculationItem->part_number}");
 
         $this->taxCalculationService->calculateTaxes($calculationItem->calculation);
 
