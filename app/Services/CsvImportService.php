@@ -74,6 +74,12 @@ class CsvImportService
                     $newItem = null;
                     $item = null;
 
+                    // Capturar warning de auto-corrección de HS code
+                    if (isset($itemData['_hs_code_warning'])) {
+                        $results['warnings'][] = "Fila {$rowNumber}: " . $itemData['_hs_code_warning'];
+                        unset($itemData['_hs_code_warning']);
+                    }
+
                     if ($existingItems->has($partNumber)) {
                         $item = $existingItems->get($partNumber);
                         $results['toUpdate'][] = ['item' => $item, 'data' => $itemData];
@@ -205,7 +211,13 @@ class CsvImportService
         }
 
         if ($itemData['hs_code'] && !TariffCode::where('hs_code', $itemData['hs_code'])->exists()) {
-            throw new \Exception("Código arancelario '{$itemData['hs_code']}' no existe en la base de datos.");
+            $resolved = $this->resolveHsCode($itemData['hs_code']);
+            if ($resolved) {
+                $itemData['hs_code'] = $resolved['hs_code'];
+                $itemData['_hs_code_warning'] = "Código '{$data['hs_code']}' no existe. Auto-corregido a '{$resolved['hs_code']}' ({$resolved['description']}) vía {$resolved['strategy']}.";
+            } else {
+                throw new \Exception("Código arancelario '{$itemData['hs_code']}' no existe en la base de datos y no se pudo resolver automáticamente.");
+            }
         }
 
         return $itemData;
@@ -224,6 +236,90 @@ class CsvImportService
         }
 
         return substr($cleaned, 0, 10);
+    }
+
+    /**
+     * Intenta resolver un código arancelario inválido buscando el código válido
+     * más cercano en la base SENAE. Estrategias en orden:
+     *
+     * 1. Buscar por padre de 6 dígitos → preferir código catch-all ("Los/Las demás")
+     * 2. Buscar por padre de 4 dígitos → preferir código catch-all
+     * 3. Buscar en cálculos previos items con descripción similar
+     */
+    protected function resolveHsCode(string $invalidCode): ?array
+    {
+        // Estrategia 1: buscar hermanos por padre de 6 dígitos
+        $parent6 = substr($invalidCode, 0, 6);
+        $siblings = TariffCode::where('is_active', true)
+            ->where('hierarchy_level', 10)
+            ->where('parent_code', $parent6)
+            ->get(['hs_code', 'description_es', 'description_en']);
+
+        if ($siblings->isNotEmpty()) {
+            // Si solo hay un código válido bajo ese padre, usarlo directamente
+            if ($siblings->count() === 1) {
+                $match = $siblings->first();
+                return [
+                    'hs_code' => $match->hs_code,
+                    'description' => $match->description_es ?: $match->description_en,
+                    'strategy' => 'único hijo del padre ' . $parent6,
+                ];
+            }
+
+            // Preferir catch-all ("Los demás"/"Las demás") más cercano al código inválido
+            $catchAlls = $siblings->filter(function ($code) {
+                $desc = strtolower($code->description_es . ' ' . $code->description_en);
+                return str_contains($desc, 'los demás') || str_contains($desc, 'las demás');
+            });
+
+            if ($catchAlls->isNotEmpty()) {
+                // Ordenar por levenshtein, desempatar por distancia numérica absoluta
+                $best = $catchAlls->sortBy(function ($code) use ($invalidCode) {
+                    $lev = levenshtein($code->hs_code, $invalidCode);
+                    $numDist = abs((int) $code->hs_code - (int) $invalidCode);
+                    return $lev * 10000000000 + $numDist;
+                })->first();
+                return [
+                    'hs_code' => $best->hs_code,
+                    'description' => $best->description_es ?: $best->description_en,
+                    'strategy' => 'catch-all bajo padre ' . $parent6,
+                ];
+            }
+
+            // Si no hay catch-all, usar el más cercano (levenshtein + distancia numérica)
+            $closest = $siblings->sortBy(function ($code) use ($invalidCode) {
+                $lev = levenshtein($code->hs_code, $invalidCode);
+                $numDist = abs((int) $code->hs_code - (int) $invalidCode);
+                return $lev * 10000000000 + $numDist;
+            })->first();
+            return [
+                'hs_code' => $closest->hs_code,
+                'description' => $closest->description_es ?: $closest->description_en,
+                'strategy' => 'código más cercano bajo padre ' . $parent6,
+            ];
+        }
+
+        // Estrategia 2: buscar por padre de 4 dígitos (más amplio)
+        $parent4 = substr($invalidCode, 0, 4);
+        $broader = TariffCode::where('is_active', true)
+            ->where('hierarchy_level', 10)
+            ->where('hs_code', 'LIKE', $parent4 . '%')
+            ->get(['hs_code', 'description_es', 'description_en']);
+
+        if ($broader->isNotEmpty()) {
+            // Buscar el código que más se parezca numéricamente
+            $closest = $broader->sortBy(function ($code) use ($invalidCode) {
+                return levenshtein($code->hs_code, $invalidCode);
+            })->first();
+
+            return [
+                'hs_code' => $closest->hs_code,
+                'description' => $closest->description_es ?: $closest->description_en,
+                'strategy' => 'código más cercano bajo capítulo ' . $parent4,
+            ];
+        }
+
+        return null;
     }
 
     public function suggestTariffCode(CalculationItem $item): ?array
