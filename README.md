@@ -25,6 +25,7 @@ TaxImportEC es el primer software en Ecuador diseñado para calcular impuestos d
 ### 👥 Sistema Multi-Usuario
 - **Roles diferenciados**: Administrador y Usuario
 - **Gestión de cálculos** con nombre, fecha y creador
+- **Búsqueda de cálculos** por nombre, descripción o productos (part number, descripción, partida HS)
 - **Historial completo** de cálculos para auditoría y correcciones
 - **Configuraciones personalizables** por usuario
 

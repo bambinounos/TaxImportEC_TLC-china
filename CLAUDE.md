@@ -27,6 +27,15 @@ Notable absences:
 - **No frontend build.** There is no `package.json`/Vite despite README/manuals mentioning `npm run build`. Bootstrap 5.1 and Font Awesome load from CDNs in `resources/views/layouts/`. Do not introduce a build step for asset changes.
 - Database must be **PostgreSQL** — migrations use PostgreSQL-specific syntax (e.g. the users role enum migration alters a CHECK constraint, not a MySQL ENUM).
 
+## Frontend Surfaces
+
+Two distinct visual systems coexist:
+
+- **Interior app** (`layouts/app.blade.php` + dashboard/calculations/admin views): Bootstrap 5.1 from CDN. Pagination renders Bootstrap 5 markup because `AppServiceProvider::boot()` calls `Paginator::useBootstrapFive()` — do not remove it, or pagination arrows render as giant unstyled Tailwind SVGs.
+- **Public/guest pages** (`welcome.blade.php`, `layouts/guest.blade.php` used by `auth/login` and `auth/register`): fully self-contained "customs-document" identity — inline CSS, Google Fonts CDN (Archivo / IBM Plex Mono / Public Sans), **no Bootstrap**. Tokens: ink `#16233A`, paper `#F4EDDC`, stamp red `#BE3A26` (stamp + primary CTA only), kraft `#C49A55`. Extend this identity from `layouts/guest.blade.php` when restyling more guest pages; the interior app has not adopted it.
+
+The calculations index supports search (`?search=`) matching calculation name/description or contained items (part_number, description_en/es, hs_code) via PostgreSQL `ilike` — see `CalculationController::index()`.
+
 ## Seeders Are Production Data
 
 `db:seed` loads official Ecuador government data, not fake data: ~9,566 tariff codes (`TariffCodeSeeder`), ~2,708 China FTA reduction schedules (`TlcScheduleSeeder`), 19 ICE tax categories, and system settings. The `.backup` files in `database/seeders/` and the `fix_*.py` / `create_new_seeders.py` / `parse_new_attachments.py` scripts at repo root are one-off artifacts from generating those seeders — don't run or modify them for normal work.
