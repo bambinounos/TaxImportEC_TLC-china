@@ -30,18 +30,43 @@ class CalculationController extends Controller
         $this->csvExportService = $csvExportService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search', '');
+        $search = is_string($search) ? trim($search) : '';
+
+        $filter = function ($query) use ($search) {
+            if ($search === '') {
+                return;
+            }
+
+            $query->where(function ($q) use ($search) {
+                $q->where('calculations.name', 'ilike', "%{$search}%")
+                  ->orWhere('calculations.description', 'ilike', "%{$search}%")
+                  ->orWhereHas('items', function ($iq) use ($search) {
+                      $iq->where('part_number', 'ilike', "%{$search}%")
+                         ->orWhere('description_en', 'ilike', "%{$search}%")
+                         ->orWhere('description_es', 'ilike', "%{$search}%")
+                         ->orWhere('hs_code', 'ilike', "%{$search}%");
+                  });
+            });
+        };
+
         $calculations = Auth::user()->calculations()
+            ->with(['items', 'shares'])
+            ->tap($filter)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         $sharedCalculations = Auth::user()->sharedCalculations()
-            ->with('user')
+            ->with(['user', 'items'])
+            ->tap($filter)
             ->orderBy('calculation_shares.created_at', 'desc')
-            ->paginate(10, ['*'], 'shared_page');
+            ->paginate(10, ['*'], 'shared_page')
+            ->withQueryString();
 
-        return view('calculations.index', compact('calculations', 'sharedCalculations'));
+        return view('calculations.index', compact('calculations', 'sharedCalculations', 'search'));
     }
 
     public function create()

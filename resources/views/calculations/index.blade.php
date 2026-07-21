@@ -13,6 +13,26 @@
                 </div>
 
                 <div class="card-body">
+                    <form method="GET" action="{{ route('calculations.index') }}" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" value="{{ $search }}"
+                                   placeholder="Buscar por nombre, descripción o producto (part number, descripción, partida HS)..."
+                                   aria-label="Buscar cálculos">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            @if($search !== '')
+                                <a href="{{ route('calculations.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+                            @endif
+                        </div>
+                    </form>
+
+                    @if($search !== '' && $calculations->total() > 0)
+                        <p class="text-muted small mb-3">
+                            {{ $calculations->total() }} {{ $calculations->total() === 1 ? 'cálculo encontrado' : 'cálculos encontrados' }} para «{{ $search }}»
+                        </p>
+                    @endif
+
                     @if($calculations->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-striped">
@@ -72,6 +92,12 @@
                         </div>
 
                         {{ $calculations->links() }}
+                    @elseif($search !== '')
+                        <div class="text-center py-4">
+                            <h5>No se encontraron cálculos para «{{ $search }}»</h5>
+                            <p class="text-muted">Pruebe con otro nombre, part number o partida arancelaria.</p>
+                            <a href="{{ route('calculations.index') }}" class="btn btn-outline-secondary">Ver todos los cálculos</a>
+                        </div>
                     @else
                         <div class="text-center py-4">
                             <h5>No hay cálculos creados</h5>
