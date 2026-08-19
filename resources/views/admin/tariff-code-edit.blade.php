@@ -8,7 +8,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4><i class="fas fa-edit"></i> Editar Código Arancelario: {{ $tariffCode->hs_code }}</h4>
                     <div>
-                        <a href="{{ route('admin.tariff-code.show', $tariffCode) }}" class="btn btn-info me-2">
+                        <a href="{{ route('admin.tariff-codes.show', $tariffCode) }}" class="btn btn-info me-2">
                             <i class="fas fa-eye"></i> Ver Detalle
                         </a>
                         <a href="{{ route('admin.tariff-codes') }}" class="btn btn-secondary">
@@ -27,7 +27,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('admin.tariff-code.update', $tariffCode) }}" method="POST">
+                    <form action="{{ route('admin.tariff-codes.update', $tariffCode) }}" method="POST">
                         @csrf
                         @method('PUT')
                         

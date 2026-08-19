@@ -98,6 +98,20 @@ npm run build
 php artisan serve
 ```
 
+## Pendientes / Roadmap
+
+### Planificar liberación de IVA (códigos liberatorios SENAE)
+
+**Contexto (caso real orugas de cosechadora, ago-2026):** El arancel de SENAE puede mostrar IVA 15% como tributo fijo, pero ciertas subpartidas tienen **liberaciones de IVA** (rebaja 100%) vigentes. Ejemplo verificado en SENAE live: subpartida `8433909000` (partes de máquinas cosechadoras y trilladoras) tiene el **código liberatorio 0672** (LIBERACION/LIB, IVA rebaja 100%, vigente desde 01/09/2023) amparado en LORTI Art. 55 numeral 5 y Decreto Ejecutivo 1232 Anexo 1.
+
+**Estado actual del sistema:** El software NO modela liberaciones/exoneraciones de IVA. El IVA se calcula únicamente desde `tariff_codes.iva_rate` (default 15%) en `TaxCalculationService::calculateIva`. El campo `ice_exempt` solo cubre exoneración de ICE, no de IVA. Cambiar `iva_rate` a 0 es un workaround manual que no refleja la causa legal.
+
+**Por implementar:**
+1. Tabla de liberaciones (código liberatorio, tipo, tributo afectado, % rebaja, vigencia, base legal, subpartida) espejo del endpoint SENAE `/arancel/rest/data/liberaciones`.
+2. Aplicación de la rebaja en `TaxCalculationService::calculateIva` (y arancel) cuando exista liberación vigente para la subpartida.
+3. UI en Admin para importar/sincronizar liberaciones desde SENAE y visualizarlas por subpartida.
+4. Exportar el código liberatorio en CSV/Excel para sustento de la declaración.
+
 ## Uso del Sistema
 
 ### Importación de Productos

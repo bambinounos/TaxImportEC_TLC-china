@@ -22,7 +22,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('admin.tariff-code.store') }}" method="POST">
+                    <form action="{{ route('admin.tariff-codes.store') }}" method="POST">
                         @csrf
                         
                         <div class="row">
