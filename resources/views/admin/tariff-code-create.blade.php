@@ -24,6 +24,9 @@
 
                     <form action="{{ route('admin.tariff-codes.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="hierarchy_level" value="10">
+                        <input type="hidden" name="parent_code" value="">
+                        <input type="hidden" name="order_number" value="">
                         
                         <div class="row">
                             <div class="col-md-6">

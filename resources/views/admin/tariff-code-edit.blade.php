@@ -30,6 +30,9 @@
                     <form action="{{ route('admin.tariff-codes.update', $tariffCode) }}" method="POST">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="hierarchy_level" value="{{ $tariffCode->hierarchy_level }}">
+                        <input type="hidden" name="parent_code" value="{{ $tariffCode->parent_code }}">
+                        <input type="hidden" name="order_number" value="{{ $tariffCode->order_number }}">
                         
                         <div class="row">
                             <div class="col-md-6">
