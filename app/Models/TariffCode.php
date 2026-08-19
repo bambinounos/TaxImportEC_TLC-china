@@ -36,6 +36,11 @@ class TariffCode extends Model
         return $this->hasMany(CalculationItem::class, 'hs_code', 'hs_code');
     }
 
+    public function getRouteKeyName()
+    {
+        return 'hs_code';
+    }
+
     public function getEffectiveTariffRate(string $countryCode = 'CHN', int $year = null): float
     {
         $year = $year ?? date('Y');
