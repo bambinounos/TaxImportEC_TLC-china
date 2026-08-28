@@ -97,13 +97,33 @@ php artisan up
 
 La aplicación ahora está actualizada y disponible para los usuarios.
 
-## (Opcional) Reiniciar los Queue Workers
+## Configuración de Seguridad y Google reCAPTCHA v3
 
-Si su aplicación utiliza colas (queues) para trabajos en segundo plano (e.g., enviar correos electrónicos, procesar trabajos pesados), debe reiniciarlos para que utilicen el nuevo código.
+Para activar la protección invisible contra registros automatizados y bots, agregue las siguientes variables al archivo `.env`:
+
+```env
+# Google reCAPTCHA v3 (Invisible)
+RECAPTCHA_SITE_KEY=tu_clave_de_sitio_publica
+RECAPTCHA_SECRET_KEY=tu_clave_secreta_privada
+RECAPTCHA_MIN_SCORE=0.5
+```
+
+### Auditoría y Limpieza de Usuarios Bots Existentes
+
+Puede auditar o purgar cuentas bot que se hayan registrado con correos temporales o sin cálculos:
 
 ```bash
-php artisan queue:restart
+# Listar usuarios sospechosos (0 cálculos y correos temporales/desechables)
+php artisan users:audit-bots
+
+# Listar todos los usuarios con 0 cálculos
+php artisan users:audit-bots --all-empty
+
+# Desactivar en masa las cuentas detectadas
+php artisan users:audit-bots --action=deactivate
+
+# Eliminar en masa las cuentas detectadas
+php artisan users:audit-bots --action=delete
 ```
-Este comando instruirá a todos los workers de la cola para que se reinicien de forma gradual sin interrumpir los trabajos que se están ejecutando actualmente.
 
 Con estos pasos, su aplicación TaxImportEC estará actualizada y funcionando con la última versión del código.

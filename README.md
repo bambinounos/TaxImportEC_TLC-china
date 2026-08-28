@@ -27,7 +27,13 @@ TaxImportEC es el primer software en Ecuador diseñado para calcular impuestos d
 - **Gestión de cálculos** con nombre, fecha y creador
 - **Búsqueda de cálculos** por nombre, descripción o productos (part number, descripción, partida HS)
 - **Historial completo** de cálculos para auditoría y correcciones
-- **Configuraciones personalizables** por usuario
+### 🛡️ Seguridad y Blindaje Anti-Bots
+- **Google reCAPTCHA v3 (Invisible)**: Evaluación de comportamiento sin interrupciones para usuarios reales
+- **Honeypot + Time-Gate**: Detección de envíos automáticos y submisiones instantáneas
+- **Rate Limiting por IP**: Protección estricta contra ataques de fuerza bruta y registros masivos
+- **Filtro de Correos Temporales**: Bloqueo de dominios desechables y verificación de registros DNS MX
+- **Control de Cuentas Inactivas**: Validación estricta en login para impedir acceso a cuentas suspendidas
+- **Herramienta de Auditoría**: Comando `php artisan users:audit-bots` para inspeccionar y depurar bots
 
 ### ⚙️ Configuración Flexible
 - **Modo TLC China** vs cálculo de impuestos normal

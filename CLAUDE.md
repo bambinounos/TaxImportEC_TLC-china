@@ -13,6 +13,7 @@ composer install                 # dependencies (use --no-dev --optimize-autoloa
 php artisan serve                # dev server
 php artisan migrate              # run migrations (--force needed in production)
 php artisan db:seed              # seeds REAL production data (see below)
+php artisan users:audit-bots    # inspect/deactivate/delete bot user registrations
 vendor/bin/pint                  # code style (Laravel Pint)
 ```
 
@@ -55,12 +56,13 @@ Proration of shared costs (freight, additional pre/post-tax) is by FOB value or 
 
 After changing item data or calculation costs, controllers call `TaxCalculationService::calculateTaxes()` to recompute everything; totals are denormalized onto the `calculations` row.
 
-## Authorization Model
+## Authorization & Security Model
 
 Three roles on `users.role`: `admin`, `user`, `tariff_viewer`.
 
 - **Ownership/sharing** of calculations goes through `app/Policies/CalculationPolicy.php`. Calculations can be shared via `calculation_shares` (pivot with `view`/`edit` permission); only owner or admin can delete/share. Mutations are recorded to `calculation_audit_logs` via `AuditService`.
 - **Role gates** are inline closure middleware in controller constructors (`AdminController` requires `isAdmin()`, `TariffCodeViewController` requires `canViewTariffs()` = admin or tariff_viewer). An `admin` middleware alias also exists in `app/Http/Kernel.php`. Follow the existing pattern of the controller you're editing.
+- **Registration & Anti-Bot Protection**: `RegisteredUserController` employs `AntiBotService` for defense-in-depth: invisible Honeypot (`website_hp`), cryptographic Time-Gate token (`_form_rendered_at`, min 3s, max 2h), disposable email blocking with DNS MX validation, Google reCAPTCHA v3 score verification (`RECAPTCHA_SITE_KEY`/`RECAPTCHA_SECRET_KEY`), and IP rate limiting (`throttle:6,1` on `POST /register`). Login checks `is_active => true` to ensure deactivated accounts cannot authenticate. Admin audit command: `php artisan users:audit-bots`.
 
 ## CSV Import
 
