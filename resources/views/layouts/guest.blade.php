@@ -182,5 +182,6 @@
         TaxImportEC — Liquidación de tributos al comercio exterior · Ecuador
     </footer>
 
+    @stack('scripts')
 </body>
 </html>
