@@ -125,6 +125,7 @@
                                 <li><i class="fas fa-check text-success"></i> Cálculo automático de impuestos</li>
                                 <li><i class="fas fa-check text-success"></i> Aplicación de TLC China</li>
                                 <li><i class="fas fa-check text-success"></i> Exoneración ICE por producto</li>
+                                <li><i class="fas fa-check text-success"></i> Códigos Liberatorios SENAE (IVA 0% / Arancel)</li>
                                 <li><i class="fas fa-check text-success"></i> Importación/Exportación CSV</li>
                             </ul>
                         </div>
@@ -142,28 +143,34 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ route('admin.liberations.index') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-file-contract"></i><br>
+                                Códigos Liberatorios SENAE
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <a href="{{ route('admin.local-expenses-config') }}" class="btn btn-outline-success btn-lg w-100">
                                 <i class="fas fa-cogs"></i><br>
                                 Configuración Gastos Locales
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.clear-cache') }}" class="btn btn-outline-danger btn-lg w-100">
-                                <i class="fas fa-trash-alt"></i><br>
-                                Borrar Caché
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.tariff-codes') }}" class="btn btn-outline-primary btn-lg w-100">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ route('admin.tariff-codes') }}" class="btn btn-outline-dark btn-lg w-100">
                                 <i class="fas fa-edit"></i><br>
                                 Administrar Partidas
                             </a>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <a href="{{ route('admin.tlc-schedules') }}" class="btn btn-outline-info btn-lg w-100">
                                 <i class="fas fa-handshake"></i><br>
                                 Ver Cronogramas TLC
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ route('admin.clear-cache') }}" class="btn btn-outline-danger btn-lg w-100">
+                                <i class="fas fa-trash-alt"></i><br>
+                                Borrar Caché
                             </a>
                         </div>
                     </div>

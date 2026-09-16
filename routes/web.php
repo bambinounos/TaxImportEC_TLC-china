@@ -69,6 +69,12 @@ Route::middleware(['auth'])->group(function () {
             ->only(['index', 'show', 'edit', 'update', 'destroy'])
             ->where(['user' => '[0-9]+']);
 
+        // SENAE Liberations (TPNG & Customs Exemption Codes)
+        Route::get('/liberations', [AdminController::class, 'liberations'])->name('liberations.index');
+        Route::post('/liberations', [AdminController::class, 'storeLiberation'])->name('liberations.store');
+        Route::put('/liberations/{senaeLiberation}', [AdminController::class, 'updateLiberation'])->name('liberations.update');
+        Route::delete('/liberations/{senaeLiberation}', [AdminController::class, 'destroyLiberation'])->name('liberations.destroy');
+
         Route::post('/favicon', [AdminController::class, 'updateFavicon'])->name('favicon.update');
     });
 });

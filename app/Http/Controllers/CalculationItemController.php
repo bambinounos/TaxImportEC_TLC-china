@@ -32,6 +32,11 @@ class CalculationItemController extends Controller
             'unit_weight' => 'nullable|numeric|min:0',
             'ice_exempt' => 'nullable|boolean',
             'ice_exempt_reason' => 'nullable|string|max:255',
+            'iva_exempt' => 'nullable|boolean',
+            'iva_exempt_reason' => 'nullable|string|max:255',
+            'liberation_code' => 'nullable|string|max:20',
+            'tariff_exempt' => 'nullable|boolean',
+            'tariff_exempt_reason' => 'nullable|string|max:255',
             'profit_margin_percent' => 'nullable|numeric|min:0|max:1000',
         ]);
 
@@ -47,6 +52,24 @@ class CalculationItemController extends Controller
             $data['unit_cost'] = $data['unit_price_fob'];
             $data['sale_price'] = $data['total_fob_value'];
             $data['unit_sale_price'] = $data['unit_price_fob'];
+
+            $data['ice_exempt'] = $request->boolean('ice_exempt');
+            $data['iva_exempt'] = $request->boolean('iva_exempt');
+            $data['tariff_exempt'] = $request->boolean('tariff_exempt');
+
+            if (!empty($data['liberation_code']) && !$data['iva_exempt']) {
+                $lib = \App\Models\SenaeLiberation::where('code', $data['liberation_code'])->first();
+                if ($lib && $lib->exempts_iva) {
+                    $data['iva_exempt'] = true;
+                }
+            }
+
+            if ($data['iva_exempt'] && empty($data['iva_exempt_reason']) && !empty($data['liberation_code'])) {
+                $lib = \App\Models\SenaeLiberation::where('code', $data['liberation_code'])->first();
+                if ($lib) {
+                    $data['iva_exempt_reason'] = "TPNG {$lib->code} - {$lib->description}" . ($lib->legal_basis ? " ({$lib->legal_basis})" : "");
+                }
+            }
 
             if ($request->filled('profit_margin_percent')) {
                 $data['profit_margin_percent'] = $request->profit_margin_percent;
@@ -88,7 +111,9 @@ class CalculationItemController extends Controller
     {
         $this->authorize('update', $calculationItem->calculation);
 
-        return view('calculations.edit-item', compact('calculationItem'));
+        $liberations = \App\Models\SenaeLiberation::where('is_active', true)->orderBy('code')->get();
+
+        return view('calculations.edit-item', compact('calculationItem', 'liberations'));
     }
 
     public function update(Request $request, CalculationItem $calculationItem)
@@ -105,10 +130,33 @@ class CalculationItemController extends Controller
             'unit_weight' => 'nullable|numeric|min:0',
             'ice_exempt' => 'nullable|boolean',
             'ice_exempt_reason' => 'nullable|string|max:255',
+            'iva_exempt' => 'nullable|boolean',
+            'iva_exempt_reason' => 'nullable|string|max:255',
+            'liberation_code' => 'nullable|string|max:20',
+            'tariff_exempt' => 'nullable|boolean',
+            'tariff_exempt_reason' => 'nullable|string|max:255',
             'profit_margin_percent' => 'nullable|numeric|min:0|max:1000',
         ]);
 
         $data = $request->all();
+        $data['ice_exempt'] = $request->boolean('ice_exempt');
+        $data['iva_exempt'] = $request->boolean('iva_exempt');
+        $data['tariff_exempt'] = $request->boolean('tariff_exempt');
+
+        if (!empty($data['liberation_code']) && !$data['iva_exempt']) {
+            $lib = \App\Models\SenaeLiberation::where('code', $data['liberation_code'])->first();
+            if ($lib && $lib->exempts_iva) {
+                $data['iva_exempt'] = true;
+            }
+        }
+
+        if ($data['iva_exempt'] && empty($data['iva_exempt_reason']) && !empty($data['liberation_code'])) {
+            $lib = \App\Models\SenaeLiberation::where('code', $data['liberation_code'])->first();
+            if ($lib) {
+                $data['iva_exempt_reason'] = "TPNG {$lib->code} - {$lib->description}" . ($lib->legal_basis ? " ({$lib->legal_basis})" : "");
+            }
+        }
+
         if (!$request->filled('use_custom_profit')) {
             $data['profit_margin_percent'] = null;
         }

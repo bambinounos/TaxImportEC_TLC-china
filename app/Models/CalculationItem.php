@@ -17,6 +17,11 @@ class CalculationItem extends Model
         'hs_code',
         'ice_exempt',
         'ice_exempt_reason',
+        'iva_exempt',
+        'iva_exempt_reason',
+        'liberation_code',
+        'tariff_exempt',
+        'tariff_exempt_reason',
         'unit_weight',
         'quantity',
         'unit_price_fob',
@@ -44,6 +49,8 @@ class CalculationItem extends Model
 
     protected $casts = [
         'ice_exempt' => 'boolean',
+        'iva_exempt' => 'boolean',
+        'tariff_exempt' => 'boolean',
         'unit_weight' => 'decimal:4',
         'unit_price_fob' => 'decimal:4',
         'total_fob_value' => 'decimal:2',
@@ -76,5 +83,10 @@ class CalculationItem extends Model
     public function tariffCode()
     {
         return $this->belongsTo(TariffCode::class, 'hs_code', 'hs_code');
+    }
+
+    public function senaeLiberation()
+    {
+        return $this->belongsTo(SenaeLiberation::class, 'liberation_code', 'code');
     }
 }

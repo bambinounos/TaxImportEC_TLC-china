@@ -332,4 +332,94 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'No se pudo borrar la caché: ' . $e->getMessage());
         }
     }
+
+    public function liberations(Request $request): View
+    {
+        $query = \App\Models\SenaeLiberation::query();
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('legal_basis', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->get('type'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->get('status') === 'active');
+        }
+
+        $liberations = $query->orderBy('code')->paginate(20)->withQueryString();
+
+        return view('admin.liberations.index', compact('liberations'));
+    }
+
+    public function storeLiberation(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:20|unique:senae_liberations,code',
+            'type' => 'required|string|max:50',
+            'description' => 'required|string|max:255',
+            'legal_basis' => 'nullable|string',
+            'exempts_iva' => 'nullable|boolean',
+            'iva_reduction_percent' => 'nullable|numeric|min:0|max:100',
+            'exempts_tariff' => 'nullable|boolean',
+            'tariff_reduction_percent' => 'nullable|numeric|min:0|max:100',
+            'exempts_ice' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['exempts_iva'] = $request->boolean('exempts_iva', true);
+        $validated['iva_reduction_percent'] = $validated['exempts_iva'] ? ($request->input('iva_reduction_percent') ?: 100.00) : 0.00;
+        $validated['exempts_tariff'] = $request->boolean('exempts_tariff', false);
+        $validated['tariff_reduction_percent'] = $validated['exempts_tariff'] ? ($request->input('tariff_reduction_percent') ?: 100.00) : 0.00;
+        $validated['exempts_ice'] = $request->boolean('exempts_ice', false);
+        $validated['is_active'] = $request->boolean('is_active', true);
+
+        \App\Models\SenaeLiberation::create($validated);
+
+        return redirect()->route('admin.liberations.index')
+            ->with('success', 'Código liberatorio creado exitosamente.');
+    }
+
+    public function updateLiberation(Request $request, \App\Models\SenaeLiberation $senaeLiberation): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:20|unique:senae_liberations,code,' . $senaeLiberation->id,
+            'type' => 'required|string|max:50',
+            'description' => 'required|string|max:255',
+            'legal_basis' => 'nullable|string',
+            'exempts_iva' => 'nullable|boolean',
+            'iva_reduction_percent' => 'nullable|numeric|min:0|max:100',
+            'exempts_tariff' => 'nullable|boolean',
+            'tariff_reduction_percent' => 'nullable|numeric|min:0|max:100',
+            'exempts_ice' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['exempts_iva'] = $request->boolean('exempts_iva', true);
+        $validated['iva_reduction_percent'] = $validated['exempts_iva'] ? ($request->input('iva_reduction_percent') ?: 100.00) : 0.00;
+        $validated['exempts_tariff'] = $request->boolean('exempts_tariff', false);
+        $validated['tariff_reduction_percent'] = $validated['exempts_tariff'] ? ($request->input('tariff_reduction_percent') ?: 100.00) : 0.00;
+        $validated['exempts_ice'] = $request->boolean('exempts_ice', false);
+        $validated['is_active'] = $request->boolean('is_active', true);
+
+        $senaeLiberation->update($validated);
+
+        return redirect()->route('admin.liberations.index')
+            ->with('success', 'Código liberatorio actualizado exitosamente.');
+    }
+
+    public function destroyLiberation(\App\Models\SenaeLiberation $senaeLiberation): \Illuminate\Http\RedirectResponse
+    {
+        $senaeLiberation->delete();
+
+        return redirect()->route('admin.liberations.index')
+            ->with('success', 'Código liberatorio eliminado exitosamente.');
+    }
 }

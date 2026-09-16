@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             TariffCodeSeeder::class,
             IceTaxSeeder::class,
             TlcScheduleSeeder::class,
+            SenaeLiberationSeeder::class,
         ]);
     }
 }

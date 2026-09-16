@@ -18,8 +18,11 @@ class CsvExportService
             'Descripción (EN)',
             'Descripción (ES)',
             'Código Arancelario',
+            'Código Liberatorio (TPNG)',
             'ICE Exento',
             'Razón Exoneración ICE',
+            'IVA Exento',
+            'Razón Exoneración IVA',
             'Peso Unitario',
             'Cantidad',
             'Precio Unit. FOB',
@@ -61,8 +64,11 @@ class CsvExportService
                 $item->description_en,
                 $item->description_es ?: '',
                 $item->hs_code ?: '',
+                $item->liberation_code ?: '',
                 $item->ice_exempt ? 'Sí' : 'No',
                 $item->ice_exempt_reason ?: '',
+                $item->iva_exempt ? 'Sí' : 'No',
+                $item->iva_exempt_reason ?: '',
                 $item->unit_weight ?: '',
                 $item->quantity,
                 number_format($item->unit_price_fob, 4),
@@ -110,29 +116,34 @@ class CsvExportService
             'B1' => 'Descripción (EN)',
             'C1' => 'Descripción (ES)',
             'D1' => 'Código Arancelario',
-            'E1' => 'ICE Exento',
-            'F1' => 'Razón Exoneración ICE',
-            'G1' => 'Peso Unitario',
-            'H1' => 'Cantidad',
-            'I1' => 'Precio Unit. FOB',
-            'J1' => 'Valor Total FOB',
-            'K1' => 'Flete Prorrateado',
-            'L1' => 'Seguro Prorrateado',
-            'M1' => 'Otros Costos Pre-Impuestos',
-            'N1' => 'Valor CIF',
-            'O1' => 'Tasa Arancelaria (%)',
-            'P1' => 'Arancel',
-            'Q1' => 'Tasa ICE (%)',
-            'R1' => 'ICE',
-            'S1' => 'Tasa IVA (%)',
-            'T1' => 'IVA',
-            'U1' => 'Total Impuestos',
-            'V1' => 'Otros Costos Post-Impuestos',
-            'W1' => 'Costo Total',
-            'X1' => 'Costo Unitario',
-            'Y1' => 'Precio de Venta',
-            'Z1' => 'Precio Unit. Venta',
-            'AA1' => 'Margen Ganancia Individual (%)',
+            'E1' => 'Código Liberatorio (TPNG)',
+            'F1' => 'ICE Exento',
+            'G1' => 'Razón Exoneración ICE',
+            'H1' => 'IVA Exento',
+            'I1' => 'Razón Exoneración IVA',
+            'J1' => 'Peso Unitario',
+            'K1' => 'Cantidad',
+            'L1' => 'Precio Unit. FOB',
+            'M1' => 'Valor Total FOB',
+            'N1' => 'Flete Prorrateado',
+            'O1' => 'Seguro Prorrateado',
+            'P1' => 'Otros Costos Pre-Impuestos',
+            'Q1' => 'Valor CIF',
+            'R1' => 'Tasa Arancelaria (%)',
+            'S1' => 'Arancel',
+            'T1' => 'Tasa FODINFA (%)',
+            'U1' => 'FODINFA',
+            'V1' => 'Tasa ICE (%)',
+            'W1' => 'ICE',
+            'X1' => 'Tasa IVA (%)',
+            'Y1' => 'IVA',
+            'Z1' => 'Total Impuestos',
+            'AA1' => 'Otros Costos Post-Impuestos',
+            'AB1' => 'Costo Total',
+            'AC1' => 'Costo Unitario',
+            'AD1' => 'Precio de Venta',
+            'AE1' => 'Precio Unit. Venta',
+            'AF1' => 'Margen Ganancia Individual (%)',
         ];
 
         foreach ($headers as $cell => $header) {
@@ -146,7 +157,7 @@ class CsvExportService
                 'startColor' => ['rgb' => 'E0E0E0']
             ]
         ];
-        $sheet->getStyle('A1:AA1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:AF1')->applyFromArray($headerStyle);
 
         $row = 2;
         foreach ($calculation->items as $item) {
@@ -154,34 +165,39 @@ class CsvExportService
             $sheet->setCellValue("B{$row}", $item->description_en);
             $sheet->setCellValue("C{$row}", $item->description_es ?: '');
             $sheet->setCellValue("D{$row}", $item->hs_code ?: '');
-            $sheet->setCellValue("E{$row}", $item->ice_exempt ? 'Sí' : 'No');
-            $sheet->setCellValue("F{$row}", $item->ice_exempt_reason ?: '');
-            $sheet->setCellValue("G{$row}", $item->unit_weight ?: '');
-            $sheet->setCellValue("H{$row}", $item->quantity);
-            $sheet->setCellValue("I{$row}", $item->unit_price_fob);
-            $sheet->setCellValue("J{$row}", $item->total_fob_value);
-            $sheet->setCellValue("K{$row}", $item->prorated_freight);
-            $sheet->setCellValue("L{$row}", $item->prorated_insurance);
-            $sheet->setCellValue("M{$row}", $item->prorated_additional_pre_tax);
-            $sheet->setCellValue("N{$row}", $item->cif_value);
-            $sheet->setCellValue("O{$row}", $item->tariff_rate);
-            $sheet->setCellValue("P{$row}", $item->tariff_amount);
-            $sheet->setCellValue("Q{$row}", $item->ice_rate);
-            $sheet->setCellValue("R{$row}", $item->ice_amount);
-            $sheet->setCellValue("S{$row}", $item->iva_rate);
-            $sheet->setCellValue("T{$row}", $item->iva_amount);
-            $sheet->setCellValue("U{$row}", $item->total_taxes);
-            $sheet->setCellValue("V{$row}", $item->prorated_additional_post_tax);
-            $sheet->setCellValue("W{$row}", $item->total_cost);
-            $sheet->setCellValue("X{$row}", $item->unit_cost);
-            $sheet->setCellValue("Y{$row}", $item->sale_price);
-            $sheet->setCellValue("Z{$row}", $item->unit_sale_price);
-            $sheet->setCellValue("AA{$row}", $item->profit_margin_percent);
+            $sheet->setCellValue("E{$row}", $item->liberation_code ?: '');
+            $sheet->setCellValue("F{$row}", $item->ice_exempt ? 'Sí' : 'No');
+            $sheet->setCellValue("G{$row}", $item->ice_exempt_reason ?: '');
+            $sheet->setCellValue("H{$row}", $item->iva_exempt ? 'Sí' : 'No');
+            $sheet->setCellValue("I{$row}", $item->iva_exempt_reason ?: '');
+            $sheet->setCellValue("J{$row}", $item->unit_weight ?: '');
+            $sheet->setCellValue("K{$row}", $item->quantity);
+            $sheet->setCellValue("L{$row}", $item->unit_price_fob);
+            $sheet->setCellValue("M{$row}", $item->total_fob_value);
+            $sheet->setCellValue("N{$row}", $item->prorated_freight);
+            $sheet->setCellValue("O{$row}", $item->prorated_insurance);
+            $sheet->setCellValue("P{$row}", $item->prorated_additional_pre_tax);
+            $sheet->setCellValue("Q{$row}", $item->cif_value);
+            $sheet->setCellValue("R{$row}", $item->tariff_rate);
+            $sheet->setCellValue("S{$row}", $item->tariff_amount);
+            $sheet->setCellValue("T{$row}", $item->fodinfa_rate);
+            $sheet->setCellValue("U{$row}", $item->fodinfa_amount);
+            $sheet->setCellValue("V{$row}", $item->ice_rate);
+            $sheet->setCellValue("W{$row}", $item->ice_amount);
+            $sheet->setCellValue("X{$row}", $item->iva_rate);
+            $sheet->setCellValue("Y{$row}", $item->iva_amount);
+            $sheet->setCellValue("Z{$row}", $item->total_taxes);
+            $sheet->setCellValue("AA{$row}", $item->prorated_additional_post_tax);
+            $sheet->setCellValue("AB{$row}", $item->total_cost);
+            $sheet->setCellValue("AC{$row}", $item->unit_cost);
+            $sheet->setCellValue("AD{$row}", $item->sale_price);
+            $sheet->setCellValue("AE{$row}", $item->unit_sale_price);
+            $sheet->setCellValue("AF{$row}", $item->profit_margin_percent);
 
             $row++;
         }
 
-        $columns = array_merge(range('A', 'Z'), ['AA']);
+        $columns = array_merge(range('A', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF']);
         foreach ($columns as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }

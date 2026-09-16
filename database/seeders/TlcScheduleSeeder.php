@@ -87218,6 +87218,18 @@ class TlcScheduleSeeder extends Seeder
                 'start_date' => '2020-01-01',
             ],
             [
+                'hs_code' => '8541430000',
+                'country_code' => 'CHN',
+                'base_rate' => 0.0,
+                'tlc_category' => 'A0',
+                'yearly_rates' => json_encode(['year_1' => 0.0, 'year_2' => 0.0, 'year_3' => 0.0, 'year_4' => 0.0, 'year_5' => 0.0, 'year_6' => 0.0, 'year_7' => 0.0, 'year_8' => 0.0, 'year_9' => 0.0, 'year_10' => 0.0, 'year_11' => 0.0, 'year_12' => 0.0, 'year_13' => 0.0, 'year_14' => 0.0, 'year_15' => 0.0, 'year_16' => 0.0, 'year_17' => 0.0, 'year_18' => 0.0, 'year_19' => 0.0, 'year_20' => 0.0]),
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'elimination_years' => 20,
+                'start_date' => '2020-01-01',
+            ],
+            [
                 'hs_code' => '8541409000',
                 'country_code' => 'CHN',
                 'base_rate' => 0.0,

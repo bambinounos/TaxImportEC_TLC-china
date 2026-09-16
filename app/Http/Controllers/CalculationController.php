@@ -84,7 +84,9 @@ class CalculationController extends Controller
 
     public function createManual()
     {
-        return view('calculations.create-manual');
+        $liberations = \App\Models\SenaeLiberation::where('is_active', true)->orderBy('code')->get();
+
+        return view('calculations.create-manual', compact('liberations'));
     }
 
     public function storeManual(Request $request)
@@ -101,6 +103,11 @@ class CalculationController extends Controller
             'products.*.unit_weight' => 'nullable|numeric|min:0',
             'products.*.ice_exempt' => 'nullable|boolean',
             'products.*.ice_exempt_reason' => 'nullable|string|max:255',
+            'products.*.iva_exempt' => 'nullable|boolean',
+            'products.*.iva_exempt_reason' => 'nullable|string|max:255',
+            'products.*.liberation_code' => 'nullable|string|max:20',
+            'products.*.tariff_exempt' => 'nullable|boolean',
+            'products.*.tariff_exempt_reason' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -115,6 +122,22 @@ class CalculationController extends Controller
             foreach ($request->products as $productData) {
                 $totalFobValue = $productData['quantity'] * $productData['unit_price_fob'];
                 
+                $liberationCode = !empty($productData['liberation_code']) ? trim($productData['liberation_code']) : null;
+                $ivaExempt = !empty($productData['iva_exempt']);
+                if ($liberationCode && !$ivaExempt) {
+                    $lib = \App\Models\SenaeLiberation::where('code', $liberationCode)->first();
+                    if ($lib && $lib->exempts_iva) {
+                        $ivaExempt = true;
+                    }
+                }
+                $ivaExemptReason = $productData['iva_exempt_reason'] ?? null;
+                if ($ivaExempt && empty($ivaExemptReason) && $liberationCode) {
+                    $lib = \App\Models\SenaeLiberation::where('code', $liberationCode)->first();
+                    if ($lib) {
+                        $ivaExemptReason = "TPNG {$lib->code} - {$lib->description}" . ($lib->legal_basis ? " ({$lib->legal_basis})" : "");
+                    }
+                }
+
                 CalculationItem::create([
                     'calculation_id' => $calculation->id,
                     'part_number' => $productData['part_number'] ?? null,
@@ -141,6 +164,11 @@ class CalculationController extends Controller
                     'unit_weight' => $productData['unit_weight'] ?? null,
                     'ice_exempt' => $productData['ice_exempt'] ?? false,
                     'ice_exempt_reason' => $productData['ice_exempt_reason'] ?? null,
+                    'iva_exempt' => $ivaExempt,
+                    'iva_exempt_reason' => $ivaExemptReason,
+                    'liberation_code' => $liberationCode,
+                    'tariff_exempt' => $productData['tariff_exempt'] ?? false,
+                    'tariff_exempt_reason' => $productData['tariff_exempt_reason'] ?? null,
                 ]);
             }
 
@@ -221,7 +249,7 @@ class CalculationController extends Controller
     {
         $this->authorize('view', $calculation);
 
-        $calculation->load(['items.tariffCode', 'shares.sharedWithUser', 'auditLogs.user']);
+        $calculation->load(['items.tariffCode', 'items.senaeLiberation', 'shares.sharedWithUser', 'auditLogs.user']);
 
         $availableUsers = User::where('id', '!=', Auth::id())
             ->where('is_active', true)
@@ -229,7 +257,9 @@ class CalculationController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
-        return view('calculations.show', compact('calculation', 'availableUsers'));
+        $liberations = \App\Models\SenaeLiberation::where('is_active', true)->orderBy('code')->get();
+
+        return view('calculations.show', compact('calculation', 'availableUsers', 'liberations'));
     }
 
     public function importCsv(Request $request, Calculation $calculation)

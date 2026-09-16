@@ -167,7 +167,12 @@
                                         <td>{{ number_format($item->unit_weight, 3) }} kg</td>
                                         <td>${{ number_format($item->unit_price_fob, 2) }}</td>
                                         <td>${{ number_format($item->cif_value, 2) }}</td>
-                                        <td>${{ number_format($item->tariff_amount, 2) }}</td>
+                                        <td>
+                                            ${{ number_format($item->tariff_amount, 2) }}
+                                            @if($item->tariff_exempt)
+                                                <br><small class="badge bg-info text-dark" title="{{ $item->tariff_exempt_reason ?? 'Exento de arancel' }}">EXENTO</small>
+                                            @endif
+                                        </td>
                                         <td>${{ number_format($item->fodinfa_amount, 2) }}</td>
                                         <td>
                                             ${{ number_format($item->ice_amount, 2) }}
@@ -175,7 +180,14 @@
                                                 <br><small class="badge bg-warning text-dark" title="{{ $item->ice_exempt_reason }}">EXENTO</small>
                                             @endif
                                         </td>
-                                        <td>${{ number_format($item->iva_amount, 2) }}</td>
+                                        <td>
+                                            ${{ number_format($item->iva_amount, 2) }}
+                                            @if($item->iva_exempt)
+                                                <br><small class="badge bg-success" title="{{ $item->iva_exempt_reason ?? 'Exento de IVA (Tarifa 0%)' }}">
+                                                    EXENTO @if($item->liberation_code)({{ $item->liberation_code }})@endif
+                                                </small>
+                                            @endif
+                                        </td>
                                         <td><strong>${{ number_format($item->total_cost, 2) }}</strong></td>
                                         <td>
                                             @if($item->profit_margin_percent !== null)
@@ -309,7 +321,7 @@
                         <div class="form-text">
                             Columnas requeridas: <strong>part_number, description_en, quantity, unit_price_fob</strong>.
                             <br>
-                            Columnas opcionales: description_es, unit_weight, hs_code, ice_exempt, ice_exempt_reason, profit_margin_percent.
+                            Columnas opcionales: description_es, unit_weight, hs_code, ice_exempt, ice_exempt_reason, iva_exempt, iva_exempt_reason, liberation_code, profit_margin_percent.
                         </div>
                     </div>
                 </div>
@@ -404,6 +416,76 @@
                             <div class="mb-3">
                                 <label class="form-label">Razón de Exención ICE</label>
                                 <input type="text" class="form-control" name="ice_exempt_reason" value="{{ old('ice_exempt_reason') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-3 mt-2">
+                        <h6 class="text-primary mb-3"><i class="fas fa-file-contract"></i> Exoneraciones SENAE / Código Liberatorio (TPNG)</h6>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label">Código Liberatorio / TPNG</label>
+                                    <select class="form-select" id="modal_liberation_select">
+                                        <option value="">-- Sin exoneración especial (Tarifa General) --</option>
+                                        @if(isset($liberations))
+                                            @foreach($liberations as $lib)
+                                                <option value="{{ $lib->code }}"
+                                                    data-exempts-iva="{{ $lib->exempts_iva ? '1' : '0' }}"
+                                                    data-exempts-tariff="{{ $lib->exempts_tariff ? '1' : '0' }}"
+                                                    data-legal-basis="{{ $lib->legal_basis ?? $lib->description }}"
+                                                    {{ old('liberation_code') == $lib->code ? 'selected' : '' }}>
+                                                    {{ $lib->code }} - {{ $lib->description }} ({{ $lib->type }})
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                        <option value="__custom__" {{ old('liberation_code') && (isset($liberations) && !$liberations->contains('code', old('liberation_code'))) ? 'selected' : '' }}>-- Otro código manual --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-5" id="modal_custom_liberation_div" style="{{ old('liberation_code') && (isset($liberations) && !$liberations->contains('code', old('liberation_code'))) ? '' : 'display: none;' }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Código TPNG Manual</label>
+                                    <input type="text" class="form-control" id="modal_custom_liberation_input" placeholder="Ej: 0672" value="{{ old('liberation_code') }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="liberation_code" id="modal_liberation_code" value="{{ old('liberation_code') }}">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Exención IVA</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="iva_exempt" id="modal_iva_exempt" value="1" {{ old('iva_exempt') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="modal_iva_exempt">Exento de IVA (Tarifa 0%)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Razón / Base Legal IVA</label>
+                                    <input type="text" class="form-control" name="iva_exempt_reason" id="modal_iva_exempt_reason" value="{{ old('iva_exempt_reason') }}" placeholder="Ej: LORTI Art. 55 Num. 5">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Exención Arancelaria</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="tariff_exempt" id="modal_tariff_exempt" value="1" {{ old('tariff_exempt') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="modal_tariff_exempt">Exento de Arancel Ad-Valorem (0%)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Razón Exención Arancel</label>
+                                    <input type="text" class="form-control" name="tariff_exempt_reason" id="modal_tariff_exempt_reason" value="{{ old('tariff_exempt_reason') }}" placeholder="Ej: Exoneración COPCI Art. 125">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -696,3 +778,57 @@
     </div>
     @endcan
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const libSelect = document.getElementById('modal_liberation_select');
+    const customDiv = document.getElementById('modal_custom_liberation_div');
+    const customInput = document.getElementById('modal_custom_liberation_input');
+    const hiddenCode = document.getElementById('modal_liberation_code');
+    const ivaCheck = document.getElementById('modal_iva_exempt');
+    const ivaReason = document.getElementById('modal_iva_exempt_reason');
+    const tariffCheck = document.getElementById('modal_tariff_exempt');
+    const tariffReason = document.getElementById('modal_tariff_exempt_reason');
+
+    if (libSelect) {
+        libSelect.addEventListener('change', function () {
+            const val = this.value;
+            if (val === '__custom__') {
+                if (customDiv) customDiv.style.display = 'block';
+                if (hiddenCode && customInput) hiddenCode.value = customInput.value.trim();
+            } else if (val === '') {
+                if (customDiv) customDiv.style.display = 'none';
+                if (hiddenCode) hiddenCode.value = '';
+            } else {
+                if (customDiv) customDiv.style.display = 'none';
+                if (hiddenCode) hiddenCode.value = val;
+                const opt = this.options[this.selectedIndex];
+                if (opt && opt.dataset) {
+                    if (opt.dataset.exemptsIva === '1') {
+                        if (ivaCheck) ivaCheck.checked = true;
+                        if (ivaReason && !ivaReason.value.trim()) {
+                            ivaReason.value = opt.dataset.legalBasis || ('Liberación SENAE ' + val);
+                        }
+                    }
+                    if (opt.dataset.exemptsTariff === '1') {
+                        if (tariffCheck) tariffCheck.checked = true;
+                        if (tariffReason && !tariffReason.value.trim()) {
+                            tariffReason.value = opt.dataset.legalBasis || ('Liberación SENAE ' + val);
+                        }
+                    }
+                }
+            }
+        });
+
+        if (customInput) {
+            customInput.addEventListener('input', function () {
+                if (libSelect.value === '__custom__' && hiddenCode) {
+                    hiddenCode.value = this.value.trim();
+                }
+            });
+        }
+    }
+});
+</script>
+@endpush

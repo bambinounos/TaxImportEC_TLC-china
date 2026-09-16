@@ -126,6 +126,12 @@ class TaxCalculationService
 
     protected function calculateTariff(CalculationItem $item, Calculation $calculation): void
     {
+        if ($item->tariff_exempt) {
+            $item->tariff_rate = 0;
+            $item->tariff_amount = 0;
+            return;
+        }
+
         if (!$item->hs_code) {
             $item->tariff_rate = 0;
             $item->tariff_amount = 0;
@@ -199,6 +205,12 @@ class TaxCalculationService
 
     protected function calculateIva(CalculationItem $item): void
     {
+        if ($item->iva_exempt) {
+            $item->iva_rate = 0;
+            $item->iva_amount = 0;
+            return;
+        }
+
         $tariffCode = null;
         
         if ($item->hs_code) {

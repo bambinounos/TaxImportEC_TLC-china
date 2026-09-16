@@ -83,6 +83,9 @@
                                         <a class="dropdown-item" href="{{ route('admin.users.index') }}">
                                             <i class="fas fa-users-cog"></i> Gestión de Usuarios
                                         </a>
+                                        <a class="dropdown-item" href="{{ route('admin.liberations.index') }}">
+                                            <i class="fas fa-file-contract"></i> Códigos Liberatorios SENAE
+                                        </a>
                                         <div class="dropdown-divider"></div>
                                     @endif
                                     <a class="dropdown-item" href="{{ route('logout') }}"

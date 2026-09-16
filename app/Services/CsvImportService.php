@@ -24,6 +24,12 @@ class CsvImportService
         'hs_code',
         'ice_exempt',
         'ice_exempt_reason',
+        'iva_exempt',
+        'iva_exempt_reason',
+        'liberation_code',
+        'tpng_code',
+        'tariff_exempt',
+        'tariff_exempt_reason',
         'profit_margin_percent',
     ];
 
@@ -178,6 +184,41 @@ class CsvImportService
             $profitMargin = (float) $data['profit_margin_percent'];
         }
 
+        $liberationCode = !empty($data['liberation_code']) ? trim((string) $data['liberation_code']) : (!empty($data['tpng_code']) ? trim((string) $data['tpng_code']) : null);
+        
+        $ivaExempt = false;
+        if (isset($data['iva_exempt'])) {
+            $ivaExempt = filter_var($data['iva_exempt'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (!empty($liberationCode)) {
+            $senaeLib = \App\Models\SenaeLiberation::where('code', $liberationCode)->first();
+            if ($senaeLib && $senaeLib->exempts_iva) {
+                $ivaExempt = true;
+            } elseif (in_array($liberationCode, ['0672', '0411', '0671', '0673', '0001', '0021'], true)) {
+                $ivaExempt = true;
+            }
+        }
+
+        $ivaExemptReason = $data['iva_exempt_reason'] ?? null;
+        if ($ivaExempt && empty($ivaExemptReason) && !empty($liberationCode)) {
+            $senaeLib = \App\Models\SenaeLiberation::where('code', $liberationCode)->first();
+            if ($senaeLib) {
+                $ivaExemptReason = "TPNG {$senaeLib->code} - {$senaeLib->description}" . ($senaeLib->legal_basis ? " ({$senaeLib->legal_basis})" : "");
+            } else {
+                $ivaExemptReason = "Código Liberatorio SENAE: {$liberationCode}";
+            }
+        }
+
+        $tariffExempt = false;
+        if (isset($data['tariff_exempt'])) {
+            $tariffExempt = filter_var($data['tariff_exempt'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (!empty($liberationCode)) {
+            $senaeLib = \App\Models\SenaeLiberation::where('code', $liberationCode)->first();
+            if ($senaeLib && $senaeLib->exempts_tariff) {
+                $tariffExempt = true;
+            }
+        }
+        $tariffExemptReason = $data['tariff_exempt_reason'] ?? null;
+
         $itemData = [
             'part_number' => $data['part_number'],
             'description_en' => $data['description_en'],
@@ -185,6 +226,11 @@ class CsvImportService
             'hs_code' => $this->cleanHsCode($data['hs_code'] ?? null),
             'ice_exempt' => filter_var($data['ice_exempt'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'ice_exempt_reason' => $data['ice_exempt_reason'] ?? null,
+            'iva_exempt' => $ivaExempt,
+            'iva_exempt_reason' => $ivaExemptReason,
+            'liberation_code' => $liberationCode,
+            'tariff_exempt' => $tariffExempt,
+            'tariff_exempt_reason' => $tariffExemptReason,
             'unit_weight' => !empty($data['unit_weight']) ? (float) $data['unit_weight'] : null,
             'quantity' => $quantity,
             'unit_price_fob' => $unitPriceFob,
