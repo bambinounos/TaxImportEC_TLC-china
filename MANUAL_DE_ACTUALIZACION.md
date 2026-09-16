@@ -122,8 +122,17 @@ php artisan users:audit-bots --all-empty
 # Desactivar en masa las cuentas detectadas
 php artisan users:audit-bots --action=deactivate
 
-# Eliminar en masa las cuentas detectadas
-php artisan users:audit-bots --action=delete
-```
+## Códigos Liberatorios SENAE (TPNG) y Exoneración de IVA (0%)
+
+La versión incluye soporte nativo para códigos liberatorios aduaneros (ej. TPNG `0672` para maquinaria y partes agrícolas con IVA al 0% según LORTI Art. 55 Num. 5):
+
+1. **Poblar el catálogo de códigos liberatorios en la base de datos:**
+   ```bash
+   php artisan db:seed --class=SenaeLiberationSeeder --force
+   ```
+2. **Gestión Administrativa:**
+   Acceda a `/admin/liberations` para gestionar códigos oficiales (`0672`, `0411`, `0671`, etc.) o registrar nuevas liberaciones aduaneras.
+3. **Uso en Archivos CSV:**
+   Los archivos CSV admiten las columnas `liberation_code`, `iva_exempt`, `iva_exempt_reason`, `tariff_exempt` y `tariff_exempt_reason`. Al importar un ítem con código `0672`, el sistema fija automáticamente la tarifa 0% de IVA y reduce el costo total y precio de venta con precisión legal.
 
 Con estos pasos, su aplicación TaxImportEC estará actualizada y funcionando con la última versión del código.

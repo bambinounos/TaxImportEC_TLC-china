@@ -35,6 +35,13 @@ TaxImportEC es el primer software en Ecuador diseñado para calcular impuestos d
 - **Control de Cuentas Inactivas**: Validación estricta en login para impedir acceso a cuentas suspendidas
 - **Herramienta de Auditoría**: Comando `php artisan users:audit-bots` para inspeccionar y depurar bots
 
+### 🏛️ Códigos Liberatorios SENAE y Exoneración de IVA (0%)
+- **Catálogo Administrable de Códigos Liberatorios (TPNG)** con base legal y deducciones en `/admin/liberations`
+- **Exoneración de IVA (Tarifa 0%)** para maquinaria agrícola y partes (`0672` - LORTI Art. 55 Num. 5 / Decreto 1232), generadores (`0411`), tractores (`0671`), sector público (`0001`) y donaciones (`0021`)
+- **Autocompletado Inteligente en Formularios**: Asignación automática de base legal y exención al seleccionar un código liberatorio
+- **Soporte Completo en CSV y Excel**: Detección automática de columnas `liberation_code` / `tpng_code`, `iva_exempt` y `iva_exempt_reason`
+- **Cero alteración histórica**: Los cálculos preexistentes y productos sin código liberatorio conservan la tarifa estándar (15%) sin cambios
+
 ### ⚙️ Configuración Flexible
 - **Modo TLC China** vs cálculo de impuestos normal
 - **Campos adicionales dinámicos** para nuevos gastos
@@ -217,6 +224,13 @@ Para soporte técnico o consultas sobre el sistema, contactar a:
 - GitHub Issues: [Reportar un problema](https://github.com/bambinounos/TaxImportEC_TLC-china/issues)
 
 ## Changelog
+
+### v1.2.0 (2026-09-16)
+- **Soporte para Códigos Liberatorios SENAE (TPNG)**: Modelo `senae_liberations` y módulo administrativo en `/admin/liberations`.
+- **Exoneración de IVA 0%**: Integración en `TaxCalculationService` para cálculo de tarifa 0% en ítems agropecuarios (`0672` - LORTI Art. 55 Num. 5 / Decreto 1232), generadores (`0411`), tractores (`0671`) y donaciones (`0021`).
+- **Formularios interactivos**: Selector de códigos liberatorios con autollenado de base legal y opción de código manual en modales y vistas.
+- **Soporte CSV 12 columnas**: Importación y exportación de columnas `liberation_code`, `iva_exempt`, `iva_exempt_reason`, `tariff_exempt`.
+- **Blindaje Anti-Bots**: Integración de Google reCAPTCHA v3 invisible, honeypot, time-gate, rate limiting, filtro de correos temporales y comando `users:audit-bots`.
 
 ### v1.0.0 (2024-09-14)
 - Implementación inicial del sistema
