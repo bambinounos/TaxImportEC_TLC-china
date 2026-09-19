@@ -139,7 +139,8 @@
                                         <th>IVA</th>
                                         <th>Total</th>
                                         <th>Ganancia</th>
-                                        <th>Precio Venta</th>
+                                        <th>PVP Unit.</th>
+                                        <th>PVP Total</th>
                                         @can('update', $calculation)
                                         <th>Acciones</th>
                                         @endcan
@@ -196,6 +197,7 @@
                                                 <span class="badge bg-secondary" title="Margen global">{{ number_format($calculation->profit_margin_percent, 2) }}%</span>
                                             @endif
                                         </td>
+                                        <td><strong>${{ number_format($item->unit_sale_price ?? ($item->quantity > 0 ? $item->sale_price / $item->quantity : 0), 2) }}</strong></td>
                                         <td><strong>${{ number_format($item->sale_price, 2) }}</strong></td>
                                         @can('update', $calculation)
                                         <td>
@@ -225,6 +227,7 @@
                                         <th>${{ number_format($calculation->items->sum('ice_amount'), 2) }}</th>
                                         <th>${{ number_format($calculation->items->sum('iva_amount'), 2) }}</th>
                                         <th><strong>${{ number_format($calculation->items->sum('total_cost'), 2) }}</strong></th>
+                                        <th></th>
                                         <th></th>
                                         <th><strong>${{ number_format($calculation->items->sum('sale_price'), 2) }}</strong></th>
                                         @can('update', $calculation)<th></th>@endcan
